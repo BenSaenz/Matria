@@ -1,0 +1,20 @@
+[
+  {
+    "id": "calma10",
+    "code": "CALMA10",
+    "type": "percent",
+    "value": 10,
+    "minOrder": 80,
+    "description": "Campaña de bienvenida",
+    "active": true
+  },
+  {
+    "id": "ritual15",
+    "code": "RITUAL15",
+    "type": "fixed",
+    "value": 15,
+    "minOrder": 120,
+    "description": "Descuento fijo para sets y compras grandes",
+    "active": true
+  }
+]

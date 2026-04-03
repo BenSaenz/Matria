@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MATRIA | Velas aromáticas y sales orgánicas</title>
-  <meta name="description" content="MATRIA es una marca de velas aromáticas y sales orgánicas con una estética cálida, sensorial y premium. Compra online y cierra tu pedido por WhatsApp." />
+  <meta name="description" content="MATRIA es una marca de velas aromáticas y sales orgánicas con una estética cálida, sensorial y premium. Compra online y finaliza tu pedido por WhatsApp." />
   <meta name="theme-color" content="#f2efea" />
-  <meta name="robots" content="index,follow" />
   <meta property="og:title" content="MATRIA | Ritual, calma y bienestar" />
   <meta property="og:description" content="Velas aromáticas y sales orgánicas pensadas para regalarte una pausa, habitar tu ritmo y crear rituales cotidianos con intención." />
   <meta property="og:type" content="website" />
@@ -16,10 +15,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
-<body>
+<body data-page="storefront">
   <a class="skip-link" href="#main">Saltar al contenido</a>
 
-  <header class="site-header" aria-label="Encabezado principal">
+  <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="#inicio" aria-label="Ir al inicio de MATRIA">
         <span class="brand-mark" aria-hidden="true">M</span>
@@ -37,11 +36,12 @@
           <li><a href="#marca">Marca</a></li>
           <li><a href="#resenas">Reseñas</a></li>
           <li><a href="#contacto">Contacto</a></li>
+          <li><a href="admin.html">Gestión</a></li>
         </ul>
       </nav>
 
       <div class="header-actions">
-        <a class="btn btn-secondary desktop-only" href="#newsletter">Quiero novedades</a>
+        <a class="btn btn-secondary hide-mobile" href="#newsletter">Quiero novedades</a>
         <button class="icon-btn" id="cartButton" aria-label="Abrir carrito de compra">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M6 7h12l-1 11H7L6 7Zm2 0V6a4 4 0 0 1 8 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -117,34 +117,21 @@
 
         <div class="pillars-grid">
           <article class="pillar-card reveal">
-            <div class="pillar-icon" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <path d="M12 20c4.5-2.8 7-6 7-10a4 4 0 0 0-7-2.6A4 4 0 0 0 5 10c0 4 2.5 7.2 7 10Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
+            <div class="pillar-icon" aria-hidden="true">♡</div>
             <h3>Artesanía</h3>
-            <p>Cada pieza comunica cuidado. El diseño no compite; acompaña. La belleza aparece en la textura, el volumen y el gesto.</p>
+            <p>Cada pieza comunica cuidado. La belleza aparece en la textura, el volumen y el gesto.</p>
           </article>
 
           <article class="pillar-card reveal">
-            <div class="pillar-icon" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <path d="M12 20c5-3.2 7-7.4 7-12-4 .2-7 2.3-7 6.4V20Zm0 0c-5-3.2-7-7.4-7-12 4 .2 7 2.3 7 6.4V20Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
+            <div class="pillar-icon" aria-hidden="true">✿</div>
             <h3>Sostenibilidad</h3>
-            <p>Materiales nobles, intención de permanencia y una estructura preparada para crecer sin perder coherencia visual ni funcional.</p>
+            <p>Materiales nobles, intención de permanencia y una estructura preparada para crecer sin perder coherencia visual.</p>
           </article>
 
           <article class="pillar-card reveal">
-            <div class="pillar-icon" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <path d="M12 3c2.2 2 4 5.2 4 8.2A4 4 0 1 1 8 11.2C8 8.2 9.8 5 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M12 15v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              </svg>
-            </div>
+            <div class="pillar-icon" aria-hidden="true">◌</div>
             <h3>Ritual</h3>
-            <p>La experiencia invita a respirar, elegir y comprar con calma. Cada interacción está pensada para sentirse ligera, sensible y cercana.</p>
+            <p>La experiencia invita a respirar, elegir y comprar con calma. Todo se siente ligero, sensible y cercano.</p>
           </article>
         </div>
       </div>
@@ -169,9 +156,6 @@
             <label for="categoryFilter">Categoría</label>
             <select id="categoryFilter">
               <option value="todos">Todas</option>
-              <option value="Velas">Velas</option>
-              <option value="Sales">Sales</option>
-              <option value="Sets">Sets</option>
             </select>
           </div>
           <div class="field">
@@ -211,12 +195,12 @@
             <span class="eyebrow">Sobre la marca</span>
             <h2 id="marca-title">Una pausa diseñada con intención</h2>
             <p>
-              MATRIA propone un universo sensible donde cada vela y cada sal orgánica se convierten en una invitación a volver a ti. La marca habla desde la calidez, la espiritualidad suave y la sofisticación serena. No busca el exceso; busca presencia.
+              MATRIA propone un universo sensible donde cada vela y cada sal orgánica se convierten en una invitación a volver a ti. La marca habla desde la calidez, la espiritualidad suave y la sofisticación serena.
             </p>
             <ul class="story-points">
               <li><span>01</span><span><strong>Propósito:</strong> vender, captar leads y posicionar una marca premium ligada al bienestar cotidiano.</span></li>
               <li><span>02</span><span><strong>Tono de voz:</strong> cálido, espiritual, cercano y editorial.</span></li>
-              <li><span>03</span><span><strong>Experiencia:</strong> mobile-first, ligera, estética y preparada para crecer hacia ecommerce robusto.</span></li>
+              <li><span>03</span><span><strong>Experiencia:</strong> mobile-first, ligera, estética y preparada para crecer.</span></li>
             </ul>
             <div class="hero-actions">
               <a class="btn btn-primary" href="#contacto">Solicitar catálogo por WhatsApp</a>
@@ -288,7 +272,7 @@
           <div>
             <span class="eyebrow">CTA de conversión</span>
             <h2>Arma tu ritual y recíbelo por WhatsApp</h2>
-            <p>Selecciona productos, revisa el monto total y envía el resumen directo para cerrar la compra de forma simple y cercana.</p>
+            <p>Selecciona productos, aplica un cupón si corresponde y envía el resumen directo para cerrar la compra de forma simple y cercana.</p>
           </div>
           <div class="cta-actions">
             <button class="btn btn-primary" type="button" data-open-cart>Ver carrito</button>
@@ -304,9 +288,7 @@
           <article class="newsletter-card">
             <span class="eyebrow">Newsletter</span>
             <h2 id="newsletter-title">Un espacio para lanzamientos y rituales</h2>
-            <p>
-              Puedes usar esta sección para captar leads, avisar nuevas colecciones, compartir tips de bienestar o enviar códigos de lanzamiento.
-            </p>
+            <p>Puedes usar esta sección para captar leads, avisar nuevas colecciones, compartir tips de bienestar o enviar códigos de lanzamiento.</p>
             <form class="newsletter-form" id="newsletterForm">
               <div class="inline-form">
                 <input type="email" id="newsletterEmail" placeholder="Tu correo electrónico" aria-label="Tu correo electrónico" required />
@@ -319,9 +301,7 @@
           <article class="contact-card" id="contacto">
             <span class="eyebrow">Contacto</span>
             <h2>Hablemos de pedidos, regalos o colaboraciones</h2>
-            <p>
-              Formulario base para leads. Puedes conectarlo luego con Formspree, Zapier, Resend o Cloudflare Workers.
-            </p>
+            <p>Formulario base para leads. Puedes conectarlo luego con Formspree, Netlify Forms, Zapier o Cloudflare Workers.</p>
             <form class="contact-form" id="contactForm">
               <div class="field">
                 <label for="contactName">Nombre</label>
@@ -337,76 +317,6 @@
               </div>
               <button class="btn btn-primary" type="submit">Enviar consulta</button>
             </form>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="admin-title">
-      <div class="container">
-        <div class="admin-layout reveal">
-          <article class="admin-card">
-            <span class="eyebrow">Gestión local</span>
-            <h2 id="admin-title">Agregar productos desde el navegador</h2>
-            <p>
-              Este bloque sirve para pruebas rápidas. Guarda productos en localStorage. Para producción, lo ideal es editar <strong>assets/data/products.json</strong> o conectar un CMS.
-            </p>
-            <form class="admin-form" id="productForm">
-              <div class="field">
-                <label for="productName">Nombre del producto</label>
-                <input id="productName" required placeholder="Ej. Vela Aura Serena" />
-              </div>
-              <div class="field">
-                <label for="productCategory">Categoría</label>
-                <select id="productCategory" required>
-                  <option value="Velas">Velas</option>
-                  <option value="Sales">Sales</option>
-                  <option value="Sets">Sets</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="productFormat">Formato de compra</label>
-                <select id="productFormat" required>
-                  <option value="ritual">Ritual individual</option>
-                  <option value="regalo">Regalo</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="productPrice">Precio</label>
-                <input id="productPrice" type="number" min="0" step="0.01" required placeholder="79.90" />
-              </div>
-              <div class="field">
-                <label for="productDiscount">Descuento %</label>
-                <input id="productDiscount" type="number" min="0" max="90" step="1" value="0" />
-              </div>
-              <div class="field">
-                <label for="productDescription">Descripción</label>
-                <textarea id="productDescription" placeholder="Describe aroma, intención, materiales o beneficios"></textarea>
-              </div>
-              <div class="field">
-                <label for="productMedia">Imágenes o videos, una URL por línea</label>
-                <textarea id="productMedia" placeholder="assets/img/products/vela-aura-serena/01.jpg&#10;assets/img/products/vela-aura-serena/02.jpg&#10;assets/video/products/vela-aura-serena/ritual.mp4"></textarea>
-              </div>
-              <button class="btn btn-primary" type="submit">Agregar producto</button>
-            </form>
-          </article>
-
-          <article class="admin-card">
-            <span class="eyebrow">Estructura recomendada</span>
-            <h2>Carpetas listas para GitHub + Cloudflare Pages</h2>
-            <div class="notice code-block">
-              index.html<br>
-              assets/css/styles.css<br>
-              assets/js/app.js<br>
-              assets/data/products.json<br>
-              assets/img/brand/<br>
-              assets/img/products/vela-aura-serena/01.jpg<br>
-              assets/img/products/vela-aura-serena/02.jpg<br>
-              assets/video/products/vela-aura-serena/ritual.mp4
-            </div>
-            <p>
-              Ya quedó separado el HTML, CSS, JavaScript y los datos del catálogo. Así podrás editar diseño, comportamiento y productos sin mezclar todo en un solo archivo.
-            </p>
           </article>
         </div>
       </div>
@@ -463,11 +373,24 @@
         </div>
         <button class="icon-btn" type="button" data-close-cart aria-label="Cerrar carrito">×</button>
       </div>
-      <div class="drawer-body" id="cartItems"></div>
+      <div class="drawer-body">
+        <div id="cartItems"></div>
+        <div class="coupon-box">
+          <div class="field">
+            <label for="couponInput">Cupón</label>
+            <div class="inline-form compact">
+              <input id="couponInput" type="text" placeholder="Ej. CALMA10" />
+              <button class="btn btn-secondary" type="button" id="applyCouponButton">Aplicar</button>
+            </div>
+          </div>
+          <div class="coupon-state" id="couponState">No hay cupón aplicado.</div>
+        </div>
+      </div>
       <div class="drawer-footer">
         <div class="cart-summary">
           <div class="cart-summary-row"><span>Subtotal</span><strong id="subtotalAmount">S/ 0.00</strong></div>
-          <div class="cart-summary-row"><span>Descuento</span><strong id="discountAmount">S/ 0.00</strong></div>
+          <div class="cart-summary-row"><span>Descuento productos</span><strong id="discountAmount">S/ 0.00</strong></div>
+          <div class="cart-summary-row"><span>Descuento cupón</span><strong id="couponAmount">S/ 0.00</strong></div>
           <div class="cart-summary-row total"><span>Total</span><strong id="totalAmount">S/ 0.00</strong></div>
         </div>
         <button class="btn btn-primary" type="button" id="checkoutWhatsApp">Comprar por WhatsApp</button>
@@ -489,21 +412,6 @@
       <div class="modal-body" id="productModalBody"></div>
     </div>
   </div>
-
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Store",
-      "name": "MATRIA",
-      "description": "Marca de velas aromáticas y sales orgánicas con enfoque sensorial, artesanal y premium.",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "PE"
-      },
-      "areaServed": "Perú",
-      "url": "https://matria.pe"
-    }
-  </script>
 
   <script src="assets/js/app.js" defer></script>
 </body>

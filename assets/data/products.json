@@ -5,7 +5,7 @@
     "category": "Velas",
     "format": "ritual",
     "price": 79.9,
-    "discount": 10,
+    "badge": "Más vendido",
     "shortDescription": "Notas suaves y envolventes para bajar el ritmo y volver a lo esencial.",
     "description": "Vela aromática de cera vegetal con una presencia cálida y elegante. Ideal para rituales nocturnos, lectura lenta o momentos de descanso consciente.",
     "features": [
@@ -14,6 +14,11 @@
       "Aroma cálido y floral",
       "Duración estimada: 40 horas"
     ],
+    "discount": {
+      "enabled": true,
+      "type": "percent",
+      "value": 10
+    },
     "media": [
       {
         "type": "image",
@@ -30,8 +35,7 @@
         "src": "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?auto=format&fit=crop&w=1200&q=80",
         "alt": "Detalle de vela artesanal"
       }
-    ],
-    "badge": "Más vendido"
+    ]
   },
   {
     "id": "sales-luna-calma",
@@ -39,7 +43,7 @@
     "category": "Sales",
     "format": "ritual",
     "price": 52,
-    "discount": 0,
+    "badge": "Nuevo",
     "shortDescription": "Sales orgánicas para un baño de descanso, limpieza suave y pausa mental.",
     "description": "Mezcla de sales minerales y botánicos secos para transformar el baño en un gesto de autocuidado. Su perfil aromático acompaña la respiración y la relajación.",
     "features": [
@@ -48,6 +52,11 @@
       "Botánicos secos",
       "Presentación premium"
     ],
+    "discount": {
+      "enabled": false,
+      "type": "percent",
+      "value": 0
+    },
     "media": [
       {
         "type": "image",
@@ -59,8 +68,7 @@
         "src": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=1200&q=80",
         "alt": "Detalle de sales de baño y flores secas"
       }
-    ],
-    "badge": "Nuevo"
+    ]
   },
   {
     "id": "set-casa-lenta",
@@ -68,7 +76,7 @@
     "category": "Sets",
     "format": "regalo",
     "price": 129,
-    "discount": 12,
+    "badge": "Ideal para regalar",
     "shortDescription": "Un set para regalar calma: vela, sales y un gesto visual delicado.",
     "description": "Un regalo sensorial que reúne dos piezas esenciales de MATRIA. Ideal para cumpleaños, agradecimientos o detalles con intención.",
     "features": [
@@ -77,6 +85,11 @@
       "Ideal para gifting",
       "Edición cuidada"
     ],
+    "discount": {
+      "enabled": true,
+      "type": "percent",
+      "value": 12
+    },
     "media": [
       {
         "type": "image",
@@ -88,8 +101,7 @@
         "src": "https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=1200&q=80",
         "alt": "Packaging delicado para regalo"
       }
-    ],
-    "badge": "Ideal para regalar"
+    ]
   },
   {
     "id": "vela-terra-calma",
@@ -97,7 +109,7 @@
     "category": "Velas",
     "format": "ritual",
     "price": 86,
-    "discount": 5,
+    "badge": "Ritual nocturno",
     "shortDescription": "Perfil terroso, elegante y contemporáneo para una sensación de refugio.",
     "description": "Pensada para espacios serenos, esta vela aporta profundidad aromática y una presencia visual sobria. Funciona muy bien en dormitorios o escritorios.",
     "features": [
@@ -106,6 +118,11 @@
       "Quema uniforme",
       "Aroma envolvente"
     ],
+    "discount": {
+      "enabled": true,
+      "type": "fixed",
+      "value": 8
+    },
     "media": [
       {
         "type": "image",
@@ -117,65 +134,6 @@
         "src": "https://images.unsplash.com/photo-1608219951839-a5461df90d42?auto=format&fit=crop&w=1200&q=80",
         "alt": "Detalle estético de vela y textura natural"
       }
-    ],
-    "badge": "Ritual nocturno"
-  },
-  {
-    "id": "sales-amanecer-botanico",
-    "name": "Sales Amanecer Botánico",
-    "category": "Sales",
-    "format": "regalo",
-    "price": 58,
-    "discount": 8,
-    "shortDescription": "Una mezcla fresca y suave para despertar el cuerpo con intención.",
-    "description": "Sales con una presencia luminosa y botánica. Diseñadas para rituales de mañana, spa en casa o kits de regalo delicados.",
-    "features": [
-      "Notas frescas",
-      "Presentación femenina/unisex",
-      "Uso corporal",
-      "Textura mineral"
-    ],
-    "media": [
-      {
-        "type": "image",
-        "src": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Sales orgánicas con estética botánica"
-      },
-      {
-        "type": "image",
-        "src": "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Frasco premium con sales aromáticas"
-      }
-    ],
-    "badge": "Edición botánica"
-  },
-  {
-    "id": "set-ritual-esencial",
-    "name": "Set Ritual Esencial",
-    "category": "Sets",
-    "format": "regalo",
-    "price": 145,
-    "discount": 15,
-    "shortDescription": "Una experiencia de marca completa para regalar o regalarte una pausa.",
-    "description": "Set premium con selección curada para quienes valoran el diseño, la calma y el detalle. Perfecto para lanzar campañas de temporada o gifting corporativo.",
-    "features": [
-      "Selección curada",
-      "Ideal para gifting premium",
-      "Valor percibido alto",
-      "Excelente para campañas"
-    ],
-    "media": [
-      {
-        "type": "image",
-        "src": "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Set premium de regalo con estética editorial"
-      },
-      {
-        "type": "image",
-        "src": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Mood sensorial elegante para regalo"
-      }
-    ],
-    "badge": "Premium"
+    ]
   }
 ]

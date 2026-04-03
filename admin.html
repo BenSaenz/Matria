@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MATRIA Admin | Gestión de productos y cupones</title>
+  <meta name="description" content="Panel HTML de gestión para productos y cupones de MATRIA, compatible con GitHub y Cloudflare Pages." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body data-page="admin">
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <header class="site-header admin-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Ir al inicio de MATRIA">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span class="brand-text">
+          <strong>MATRIA</strong>
+          <span>panel de gestión</span>
+        </span>
+      </a>
+
+      <nav class="primary-nav admin-nav" id="primaryNav" aria-label="Navegación principal">
+        <ul class="nav-list">
+          <li><a href="#dashboard" aria-current="page">Resumen</a></li>
+          <li><a href="#productos">Productos</a></li>
+          <li><a href="#cupones">Cupones</a></li>
+          <li><a href="#herramientas">Herramientas</a></li>
+          <li><a href="index.html">Ver tienda</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <a class="btn btn-secondary hide-mobile" href="index.html">Ir a la tienda</a>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Abrir menú">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="admin-main">
+    <section class="section admin-hero" id="dashboard">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="eyebrow">Gestión local HTML</span>
+          <h1 class="admin-title">Productos, descuentos y cupones</h1>
+          <p>
+            Este panel funciona en GitHub + Cloudflare Pages sin backend. Los cambios se guardan en el navegador mediante localStorage y puedes exportarlos a JSON para reemplazar los archivos de datos del repositorio cuando desees publicar cambios permanentes.
+          </p>
+        </div>
+
+        <div class="admin-stats-grid reveal" id="adminStats"></div>
+      </div>
+    </section>
+
+    <section class="section" id="productos">
+      <div class="container">
+        <div class="admin-layout-grid">
+          <article class="admin-card reveal sticky-card">
+            <span class="eyebrow">Formulario de producto</span>
+            <h2 id="productFormTitle">Crear producto</h2>
+            <p class="admin-note">Puedes crear, modificar o eliminar productos. Dentro de cada producto puedes agregar o quitar imágenes, videos, descripciones y descuentos.</p>
+
+            <form class="admin-form" id="productEditorForm">
+              <input type="hidden" id="productId" />
+              <div class="field">
+                <label for="productName">Nombre</label>
+                <input id="productName" required placeholder="Ej. Vela Aura Serena" />
+              </div>
+              <div class="field">
+                <label for="productCategory">Categoría</label>
+                <select id="productCategory" required>
+                  <option value="Velas">Velas</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Sets">Sets</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="productFormat">Formato</label>
+                <select id="productFormat" required>
+                  <option value="ritual">Ritual individual</option>
+                  <option value="regalo">Regalo</option>
+                </select>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="productPrice">Precio base</label>
+                  <input id="productPrice" type="number" min="0" step="0.01" required placeholder="Ej. 79.90" />
+                </div>
+                <div>
+                  <label for="productBadge">Etiqueta</label>
+                  <input id="productBadge" placeholder="Ej. Nuevo, Premium" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="productShortDescription">Descripción corta</label>
+                <textarea id="productShortDescription" placeholder="Texto breve para la card del catálogo"></textarea>
+              </div>
+              <div class="field">
+                <label for="productDescription">Descripción larga</label>
+                <textarea id="productDescription" placeholder="Texto ampliado para el detalle del producto"></textarea>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="subsection-head">
+                  <h3>Descuento del producto</h3>
+                  <label class="toggle-row"><input type="checkbox" id="discountEnabled" /> Activar descuento</label>
+                </div>
+                <div class="field two-cols discount-panel" id="discountPanel">
+                  <div>
+                    <label for="discountType">Tipo</label>
+                    <select id="discountType">
+                      <option value="percent">Porcentaje</option>
+                      <option value="fixed">Valor fijo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="discountValue">Valor</label>
+                    <input id="discountValue" type="number" min="0" step="0.01" placeholder="Ej. 10 o 15.00" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="subsection-head">
+                  <h3>Características</h3>
+                  <button class="btn btn-ghost btn-small" type="button" id="addFeatureButton">Agregar característica</button>
+                </div>
+                <div id="featuresList" class="dynamic-list"></div>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="subsection-head">
+                  <h3>Imágenes y videos</h3>
+                  <button class="btn btn-ghost btn-small" type="button" id="addMediaButton">Agregar medio</button>
+                </div>
+                <div id="mediaList" class="dynamic-list"></div>
+              </div>
+
+              <div class="editor-actions">
+                <button class="btn btn-primary" type="submit" id="saveProductButton">Guardar producto</button>
+                <button class="btn btn-secondary" type="button" id="resetProductButton">Nuevo producto</button>
+                <button class="btn btn-danger" type="button" id="deleteProductButton" disabled>Eliminar producto</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="admin-card reveal">
+            <div class="section-header compact-header">
+              <span class="eyebrow">Resumen</span>
+              <h2>Cuadro resumen de productos</h2>
+              <p>Revisa nombre, precio, descuento activo y precio final. Desde aquí también puedes editar cualquier producto.</p>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Descuento</th>
+                    <th>Precio final</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="cupones">
+      <div class="container">
+        <div class="admin-layout-grid">
+          <article class="admin-card reveal sticky-card">
+            <span class="eyebrow">Formulario de cupón</span>
+            <h2 id="couponFormTitle">Crear cupón</h2>
+            <p class="admin-note">Puedes crear, modificar y eliminar cupones totales por porcentaje o por valor fijo.</p>
+
+            <form class="admin-form" id="couponEditorForm">
+              <input type="hidden" id="couponId" />
+              <div class="field two-cols">
+                <div>
+                  <label for="couponCode">Código</label>
+                  <input id="couponCode" required placeholder="Ej. CALMA10" />
+                </div>
+                <div>
+                  <label for="couponStatus">Estado</label>
+                  <select id="couponStatus">
+                    <option value="true">Activo</option>
+                    <option value="false">Inactivo</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="couponType">Tipo</label>
+                  <select id="couponType" required>
+                    <option value="percent">Porcentaje</option>
+                    <option value="fixed">Valor fijo</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="couponValue">Valor</label>
+                  <input id="couponValue" type="number" min="0" step="0.01" required placeholder="Ej. 10 o 20.00" />
+                </div>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="couponMinOrder">Compra mínima</label>
+                  <input id="couponMinOrder" type="number" min="0" step="0.01" placeholder="Opcional" />
+                </div>
+                <div>
+                  <label for="couponDescription">Descripción</label>
+                  <input id="couponDescription" placeholder="Texto interno del cupón" />
+                </div>
+              </div>
+              <div class="editor-actions">
+                <button class="btn btn-primary" type="submit">Guardar cupón</button>
+                <button class="btn btn-secondary" type="button" id="resetCouponButton">Nuevo cupón</button>
+                <button class="btn btn-danger" type="button" id="deleteCouponButton" disabled>Eliminar cupón</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="admin-card reveal">
+            <div class="section-header compact-header">
+              <span class="eyebrow">Resumen</span>
+              <h2>Listado de cupones</h2>
+              <p>Los cupones se aplican en el carrito de la tienda y se reflejan en el total enviado por WhatsApp.</p>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Mínimo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="couponsTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="herramientas">
+      <div class="container">
+        <div class="admin-tools-grid reveal">
+          <article class="admin-card">
+            <span class="eyebrow">Exportar</span>
+            <h2>JSON listo para GitHub</h2>
+            <p>Exporta los cambios actuales del navegador y reemplaza los archivos dentro de <strong>assets/data/</strong> en tu repositorio para publicarlos en Cloudflare Pages.</p>
+            <div class="editor-actions vertical-mobile">
+              <button class="btn btn-primary" type="button" id="exportProductsButton">Exportar products.json</button>
+              <button class="btn btn-secondary" type="button" id="exportCouponsButton">Exportar coupons.json</button>
+            </div>
+          </article>
+
+          <article class="admin-card">
+            <span class="eyebrow">Importar</span>
+            <h2>Cargar archivos existentes</h2>
+            <p>Importa un JSON actualizado para seguir trabajando localmente sin perder lo que ya publicaste.</p>
+            <div class="field">
+              <label for="importProductsFile">Importar products.json</label>
+              <input id="importProductsFile" type="file" accept="application/json" />
+            </div>
+            <div class="field">
+              <label for="importCouponsFile">Importar coupons.json</label>
+              <input id="importCouponsFile" type="file" accept="application/json" />
+            </div>
+          </article>
+
+          <article class="admin-card">
+            <span class="eyebrow">Control</span>
+            <h2>Reiniciar a datos base</h2>
+            <p>Esta acción recupera los datos del JSON por defecto del proyecto y limpia los cambios guardados en el navegador.</p>
+            <button class="btn btn-danger" type="button" id="resetAllButton">Restablecer productos y cupones</button>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/admin.js" defer></script>
+</body>
+</html>
