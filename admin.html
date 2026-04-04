@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MATRIA Admin | Gestión de productos y cupones</title>
-  <meta name="description" content="Panel HTML de gestión para productos y cupones de MATRIA, compatible con GitHub y Cloudflare Pages." />
+  <title>MATRIA Admin | Gestión de colecciones, productos y cupones</title>
+  <meta name="description" content="Panel HTML de gestión para colecciones, productos y cupones de MATRIA, compatible con GitHub y Cloudflare Pages." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -26,6 +26,7 @@
       <nav class="primary-nav admin-nav" id="primaryNav" aria-label="Navegación principal">
         <ul class="nav-list">
           <li><a href="#dashboard" aria-current="page">Resumen</a></li>
+          <li><a href="#colecciones-admin">Colecciones</a></li>
           <li><a href="#productos">Productos</a></li>
           <li><a href="#cupones">Cupones</a></li>
           <li><a href="#herramientas">Herramientas</a></li>
@@ -50,13 +51,120 @@
       <div class="container">
         <div class="section-header reveal">
           <span class="eyebrow">Gestión local HTML</span>
-          <h1 class="admin-title">Productos, descuentos y cupones</h1>
+          <h1 class="admin-title">Colecciones, productos y cupones</h1>
           <p>
-            Este panel funciona en GitHub + Cloudflare Pages sin backend. Los cambios se guardan en el navegador mediante localStorage y puedes exportarlos a JSON para reemplazar los archivos de datos del repositorio cuando desees publicar cambios permanentes.
+            Este panel funciona en GitHub + Cloudflare Pages sin backend. Los cambios se guardan en tu navegador mediante localStorage y luego se exportan como JSON para reemplazar los archivos de <strong>assets/data/</strong> en tu repositorio.
           </p>
         </div>
 
+        <div class="system-note reveal">
+          Las imágenes y videos deben guardarse en carpetas físicas dentro de <code>assets/img/</code>. Desde aquí administras su ruta relativa y metadatos: <strong>alt</strong>, <strong>title</strong> y <strong>caption</strong>.
+        </div>
+
         <div class="admin-stats-grid reveal" id="adminStats"></div>
+      </div>
+    </section>
+
+    <section class="section" id="colecciones-admin">
+      <div class="container">
+        <div class="admin-layout-grid">
+          <article class="admin-card reveal sticky-card">
+            <span class="eyebrow">Formulario de colección</span>
+            <h2 id="collectionFormTitle">Crear colección</h2>
+            <p class="admin-note">Crea, modifica o elimina colecciones. Cada producto puede pertenecer a una colección y la home principal se alimenta desde esta configuración.</p>
+
+            <form class="admin-form" id="collectionEditorForm">
+              <input type="hidden" id="collectionId" />
+              <div class="field two-cols">
+                <div>
+                  <label for="collectionCode">Código</label>
+                  <input id="collectionCode" placeholder="Ej. 01" />
+                </div>
+                <div>
+                  <label for="collectionName">Nombre</label>
+                  <input id="collectionName" required placeholder="Ej. ALBA" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="collectionTagline">Concepto corto</label>
+                <textarea id="collectionTagline" placeholder="Ej. El origen del día, la luz pura antes del caos."></textarea>
+              </div>
+              <div class="field">
+                <label for="collectionStory">Historia / narrativa</label>
+                <textarea id="collectionStory" placeholder="Texto principal para la colección"></textarea>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="collectionPackName">Nombre de pack</label>
+                  <input id="collectionPackName" placeholder="Ej. Pack: El Despertar" />
+                </div>
+                <div>
+                  <label for="collectionOrder">Orden visual</label>
+                  <input id="collectionOrder" type="number" min="0" step="1" value="0" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="collectionPackStory">Speech o texto de venta</label>
+                <textarea id="collectionPackStory" placeholder="Texto para catálogo o storytelling"></textarea>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="collectionCtaLabel">Texto del botón</label>
+                  <input id="collectionCtaLabel" placeholder="Ej. Explorar ALBA" />
+                </div>
+                <div>
+                  <label for="collectionStatus">Estado</label>
+                  <select id="collectionStatus">
+                    <option value="true">Activa</option>
+                    <option value="false">Inactiva</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field two-cols">
+                <label class="toggle-row"><input type="checkbox" id="collectionFeatured" /> Colección destacada</label>
+                <label class="toggle-row"><input type="checkbox" id="collectionShowOnHome" checked /> Mostrar en home</label>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="subsection-head">
+                  <h3>Imágenes y videos de colección</h3>
+                  <button class="btn btn-ghost btn-small" type="button" id="addCollectionMediaButton">Agregar medio</button>
+                </div>
+                <div id="collectionMediaList" class="dynamic-list"></div>
+              </div>
+
+              <div class="editor-actions">
+                <button class="btn btn-primary" type="submit">Guardar colección</button>
+                <button class="btn btn-secondary" type="button" id="resetCollectionButton">Nueva colección</button>
+                <button class="btn btn-danger" type="button" id="deleteCollectionButton" disabled>Eliminar colección</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="admin-card reveal">
+            <div class="section-header compact-header">
+              <span class="eyebrow">Resumen</span>
+              <h2>Cuadro resumen de colecciones</h2>
+              <p>Revisa el orden visual, el estado y cuántos productos están enlazados a cada colección.</p>
+            </div>
+
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Colección</th>
+                    <th>Orden</th>
+                    <th>Estado</th>
+                    <th>En home</th>
+                    <th>Productos</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="collectionsTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -66,28 +174,38 @@
           <article class="admin-card reveal sticky-card">
             <span class="eyebrow">Formulario de producto</span>
             <h2 id="productFormTitle">Crear producto</h2>
-            <p class="admin-note">Puedes crear, modificar o eliminar productos. Dentro de cada producto puedes agregar o quitar imágenes, videos, descripciones y descuentos.</p>
+            <p class="admin-note">Cada producto debe enlazarse a una colección. También puedes gestionar imágenes, descripciones, speech de venta, mezcla técnica y descuentos por porcentaje o valor.</p>
 
             <form class="admin-form" id="productEditorForm">
               <input type="hidden" id="productId" />
-              <div class="field">
-                <label for="productName">Nombre</label>
-                <input id="productName" required placeholder="Ej. Vela Aura Serena" />
+              <div class="field two-cols">
+                <div>
+                  <label for="productCollection">Colección</label>
+                  <select id="productCollection" required></select>
+                </div>
+                <div>
+                  <label for="productName">Nombre</label>
+                  <input id="productName" required placeholder="Ej. Amanecer Interno" />
+                </div>
               </div>
-              <div class="field">
-                <label for="productCategory">Categoría</label>
-                <select id="productCategory" required>
-                  <option value="Velas">Velas</option>
-                  <option value="Sales">Sales</option>
-                  <option value="Sets">Sets</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="productFormat">Formato</label>
-                <select id="productFormat" required>
-                  <option value="ritual">Ritual individual</option>
-                  <option value="regalo">Regalo</option>
-                </select>
+              <div class="field two-cols">
+                <div>
+                  <label for="productCategory">Producto</label>
+                  <select id="productCategory" required>
+                    <option value="Vela Pote">Vela Pote</option>
+                    <option value="Wax Melt">Wax Melt</option>
+                    <option value="Sachet">Sachet</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Set">Set</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="productFormat">Formato</label>
+                  <select id="productFormat" required>
+                    <option value="ritual">Ritual individual</option>
+                    <option value="regalo">Regalo</option>
+                  </select>
+                </div>
               </div>
               <div class="field two-cols">
                 <div>
@@ -100,12 +218,28 @@
                 </div>
               </div>
               <div class="field">
+                <label for="productTechnicalBlend">Mezcla técnica (% de aroma)</label>
+                <textarea id="productTechnicalBlend" placeholder="Ej. 90% Osmanthus (FO) + 10% Lavanda (OE)"></textarea>
+              </div>
+              <div class="field">
+                <label for="productSalesSpeech">Gancho de venta (speech para catálogo)</label>
+                <textarea id="productSalesSpeech" placeholder="Texto emocional / comercial"></textarea>
+              </div>
+              <div class="field">
                 <label for="productShortDescription">Descripción corta</label>
                 <textarea id="productShortDescription" placeholder="Texto breve para la card del catálogo"></textarea>
               </div>
               <div class="field">
-                <label for="productDescription">Descripción larga</label>
+                <label for="productDescription">Descripción principal</label>
                 <textarea id="productDescription" placeholder="Texto ampliado para el detalle del producto"></textarea>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="subsection-head">
+                  <h3>Bloques descriptivos</h3>
+                  <button class="btn btn-ghost btn-small" type="button" id="addDescriptionButton">Agregar descripción</button>
+                </div>
+                <div id="descriptionsList" class="dynamic-list"></div>
               </div>
 
               <div class="admin-subsection">
@@ -156,7 +290,7 @@
             <div class="section-header compact-header">
               <span class="eyebrow">Resumen</span>
               <h2>Cuadro resumen de productos</h2>
-              <p>Revisa nombre, precio, descuento activo y precio final. Desde aquí también puedes editar cualquier producto.</p>
+              <p>Revisa nombre, colección, precio, descuento activo y precio final. Desde aquí también puedes editar cualquier producto.</p>
             </div>
 
             <div class="table-wrap">
@@ -164,7 +298,8 @@
                 <thead>
                   <tr>
                     <th>Producto</th>
-                    <th>Categoría</th>
+                    <th>Colección</th>
+                    <th>Producto</th>
                     <th>Precio</th>
                     <th>Descuento</th>
                     <th>Precio final</th>
@@ -268,7 +403,8 @@
             <h2>JSON listo para GitHub</h2>
             <p>Exporta los cambios actuales del navegador y reemplaza los archivos dentro de <strong>assets/data/</strong> en tu repositorio para publicarlos en Cloudflare Pages.</p>
             <div class="editor-actions vertical-mobile">
-              <button class="btn btn-primary" type="button" id="exportProductsButton">Exportar products.json</button>
+              <button class="btn btn-primary" type="button" id="exportCollectionsButton">Exportar collections.json</button>
+              <button class="btn btn-secondary" type="button" id="exportProductsButton">Exportar products.json</button>
               <button class="btn btn-secondary" type="button" id="exportCouponsButton">Exportar coupons.json</button>
             </div>
           </article>
@@ -278,20 +414,31 @@
             <h2>Cargar archivos existentes</h2>
             <p>Importa un JSON actualizado para seguir trabajando localmente sin perder lo que ya publicaste.</p>
             <div class="field">
-              <label for="importProductsFile">Importar products.json</label>
-              <input id="importProductsFile" type="file" accept="application/json" />
+              <label for="importCollectionsInput">Importar colecciones</label>
+              <input id="importCollectionsInput" type="file" accept="application/json" />
             </div>
             <div class="field">
-              <label for="importCouponsFile">Importar coupons.json</label>
-              <input id="importCouponsFile" type="file" accept="application/json" />
+              <label for="importProductsInput">Importar productos</label>
+              <input id="importProductsInput" type="file" accept="application/json" />
+            </div>
+            <div class="field">
+              <label for="importCouponsInput">Importar cupones</label>
+              <input id="importCouponsInput" type="file" accept="application/json" />
             </div>
           </article>
 
           <article class="admin-card">
-            <span class="eyebrow">Control</span>
-            <h2>Reiniciar a datos base</h2>
-            <p>Esta acción recupera los datos del JSON por defecto del proyecto y limpia los cambios guardados en el navegador.</p>
-            <button class="btn btn-danger" type="button" id="resetAllButton">Restablecer productos y cupones</button>
+            <span class="eyebrow">Sistema</span>
+            <h2>Restablecer datos base</h2>
+            <p>Si deseas volver al estado inicial del proyecto, puedes limpiar tus cambios locales y restaurar los JSON originales del repositorio.</p>
+            <div class="system-note">
+              Flujo recomendado para imágenes físicas:<br />
+              <code>assets/img/collections/&lt;slug&gt;/cover.webp</code><br />
+              <code>assets/img/products/&lt;slug&gt;/01.webp</code>
+            </div>
+            <div class="editor-actions vertical-mobile">
+              <button class="btn btn-danger" type="button" id="resetAllDataButton">Restablecer datos</button>
+            </div>
           </article>
         </div>
       </div>

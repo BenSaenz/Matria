@@ -1,79 +1,49 @@
 # MATRIA · GitHub + Cloudflare Pages
 
-Proyecto HTML/CSS/JS listo para publicar en GitHub y desplegar en Cloudflare Pages.
+Proyecto estático en HTML para tienda y panel interno de gestión.
 
-## Estructura
+## Archivos principales
 
-- `index.html` → tienda principal
-- `admin.html` → panel de gestión local de productos y cupones
+- `index.html` → tienda pública
+- `admin.html` → panel interno de gestión
 - `assets/css/styles.css` → estilos globales
-- `assets/js/app.js` → lógica de tienda, carrito, cupón y WhatsApp
-- `assets/js/admin.js` → lógica de administración
-- `assets/data/products.json` → catálogo base
-- `assets/data/coupons.json` → cupones base
+- `assets/js/app.js` → lógica de la tienda
+- `assets/js/admin.js` → lógica del panel interno
+- `assets/data/collections.json` → colecciones
+- `assets/data/products.json` → productos
+- `assets/data/coupons.json` → cupones
+- `assets/img/` → imágenes físicas del sitio
 
-## Cómo funciona la administración
+## Estructura recomendada para imágenes
 
-Este proyecto es **100% estático**. Por eso, la página `admin.html`:
+- `assets/img/collections/<slug-coleccion>/cover.webp`
+- `assets/img/products/<slug-producto>/01.webp`
+- `assets/img/products/<slug-producto>/02.webp`
 
-- sí permite crear, editar y eliminar productos
-- sí permite agregar o quitar imágenes y videos
-- sí permite agregar o quitar descuentos por porcentaje o por valor fijo
-- sí permite editar descripciones cortas y largas
-- sí permite crear, editar y eliminar cupones por porcentaje o valor fijo
-- sí permite exportar JSON actualizado
+## Cómo actualizar el sitio
 
-Pero, al estar en GitHub + Cloudflare Pages sin backend:
+1. Sube o reemplaza imágenes dentro de `assets/img/`.
+2. Abre `admin.html` localmente o en tu entorno publicado.
+3. Edita colecciones, productos y cupones.
+4. Exporta `collections.json`, `products.json` y `coupons.json`.
+5. Reemplaza esos archivos en `assets/data/` dentro de GitHub.
+6. Haz commit y Cloudflare Pages publicará la nueva versión.
 
-- los cambios **no escriben automáticamente** en los archivos del repositorio
-- los cambios se guardan en el **localStorage del navegador**
-- para publicar cambios permanentes debes **exportar el JSON** y reemplazar manualmente los archivos dentro de `assets/data/`
+## Importante
 
-## Flujo recomendado de trabajo
-
-1. Abre `admin.html`
-2. Crea o edita productos y cupones
-3. Exporta `products.json` y `coupons.json`
-4. Sustituye esos archivos en `assets/data/`
-5. Haz commit y push a GitHub
-6. Cloudflare Pages publicará la actualización
-
-## Personalización importante
-
-En `assets/js/app.js`, cambia el número:
+- La tienda pública **no enlaza** al panel de gestión.
+- El panel administra **rutas y metadatos** de imagen, no sube archivos al servidor.
+- Los cambios del panel se guardan en `localStorage` hasta que exportes los JSON.
+- Si cambias el número de WhatsApp, edita esta línea en `assets/js/app.js`:
 
 ```js
 const WHATSAPP_NUMBER = '51999999999';
 ```
 
-por tu número real en formato internacional, por ejemplo:
+## Despliegue en Cloudflare Pages
 
-```js
-const WHATSAPP_NUMBER = '51923456789';
-```
+- Build command: dejar vacío
+- Output directory: `/`
+- Framework preset: `None`
 
-## Subida a GitHub
-
-1. Crea un repositorio nuevo
-2. Sube todos los archivos de esta carpeta
-3. Verifica que `index.html` quede en la raíz
-
-## Publicación en Cloudflare Pages
-
-1. Entra a Cloudflare Pages
-2. Conecta tu cuenta de GitHub
-3. Selecciona el repositorio
-4. Framework preset: `None`
-5. Build command: dejar vacío
-6. Build output directory: `/`
-7. Deploy
-
-## Nota sobre persistencia real
-
-Si luego quieres que `admin.html` escriba cambios directamente sin exportar JSON manual, necesitarás un backend o servicio adicional, por ejemplo:
-
-- Cloudflare Workers + KV / D1
-- Supabase
-- Firebase
-- CMS headless
-
+Como es un proyecto estático, GitHub + Cloudflare Pages funciona muy bien para este caso.

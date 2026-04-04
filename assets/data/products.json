@@ -1,18 +1,25 @@
 [
   {
-    "id": "vela-aura-serena",
-    "name": "Vela Aura Serena",
-    "category": "Velas",
+    "id": "amanecer-interno",
+    "collectionId": "alba",
+    "name": "Amanecer Interno",
+    "category": "Vela Pote",
     "format": "ritual",
-    "price": 79.9,
-    "badge": "Más vendido",
-    "shortDescription": "Notas suaves y envolventes para bajar el ritmo y volver a lo esencial.",
-    "description": "Vela aromática de cera vegetal con una presencia cálida y elegante. Ideal para rituales nocturnos, lectura lenta o momentos de descanso consciente.",
+    "price": 85,
+    "badge": "Despeja tu mañana",
+    "technicalBlend": "90% Osmanthus (FO) + 10% Lavanda (OE)",
+    "salesSpeech": "¿Te cuesta arrancar el día con claridad? Esta vela disipa la “niebla mental” matutina, dándote el enfoque que necesitas para tomar el control de tu jornada.",
+    "shortDescription": "Una vela para empezar el día con foco, claridad y una sensación luminosa de control.",
+    "description": "Perfil floral-suave con un fondo sereno para rituales de mañana, journaling o escritorio.",
+    "descriptions": [
+      "Ideal para primeras horas del día, home office o espacios de concentración.",
+      "Su mezcla transmite luz, aire y una pausa limpia antes del ruido cotidiano."
+    ],
     "features": [
       "Cera vegetal",
       "Mecha de algodón",
-      "Aroma cálido y floral",
-      "Duración estimada: 40 horas"
+      "Encendido pensado para mañanas",
+      "Envase reutilizable"
     ],
     "discount": {
       "enabled": true,
@@ -22,35 +29,40 @@
     "media": [
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Vela aromática en un ambiente cálido y premium"
+        "src": "assets/img/products/amanecer-interno/01.svg",
+        "alt": "Vela Amanecer Interno de MATRIA",
+        "title": "Vista principal",
+        "caption": "Luz floral para empezar con enfoque."
       },
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1608571423539-e951a3a5c12e?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Vela decorativa sobre superficie de piedra"
-      },
-      {
-        "type": "image",
-        "src": "https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Detalle de vela artesanal"
+        "src": "assets/img/products/amanecer-interno/02.svg",
+        "alt": "Detalle de Amanecer Interno",
+        "title": "Detalle",
+        "caption": "Estética editorial con tonos crema y arena."
       }
     ]
   },
   {
-    "id": "sales-luna-calma",
-    "name": "Sales Luna Calma",
-    "category": "Sales",
+    "id": "brisa-de-alba",
+    "collectionId": "alba",
+    "name": "Brisa de Alba",
+    "category": "Wax Melt",
     "format": "ritual",
-    "price": 52,
-    "badge": "Nuevo",
-    "shortDescription": "Sales orgánicas para un baño de descanso, limpieza suave y pausa mental.",
-    "description": "Mezcla de sales minerales y botánicos secos para transformar el baño en un gesto de autocuidado. Su perfil aromático acompaña la respiración y la relajación.",
+    "price": 42,
+    "badge": "Claridad creativa",
+    "technicalBlend": "100% Osmanthus (FO)",
+    "salesSpeech": "¿Sientes tu espacio de trabajo pesado? Úsalo para limpiar el ambiente y recuperar la agudeza mental durante tus horas de mayor exigencia creativa.",
+    "shortDescription": "Wax melt para refrescar el ambiente y despejar la mente en sesiones creativas.",
+    "description": "Piezas aromáticas de rápida difusión para renovar la energía del ambiente.",
+    "descriptions": [
+      "Funciona muy bien en estudio, escritorio o rincones de trabajo."
+    ],
     "features": [
-      "Uso en tina o pediluvio",
-      "Aromaterapia suave",
-      "Botánicos secos",
-      "Presentación premium"
+      "Difusión rápida",
+      "Fácil de usar",
+      "Ideal para hornillo",
+      "Aroma limpio"
     ],
     "discount": {
       "enabled": false,
@@ -60,30 +72,105 @@
     "media": [
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Sales aromáticas en frasco de vidrio"
-      },
-      {
-        "type": "image",
-        "src": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Detalle de sales de baño y flores secas"
+        "src": "assets/img/products/brisa-de-alba/01.svg",
+        "alt": "Wax melt Brisa de Alba",
+        "title": "Vista principal",
+        "caption": "Frescura aromática para volver a enfocar."
       }
     ]
   },
   {
-    "id": "set-casa-lenta",
-    "name": "Set Casa Lenta",
-    "category": "Sets",
+    "id": "rocio-matinal",
+    "collectionId": "alba",
+    "name": "Rocío Matinal",
+    "category": "Sachet",
     "format": "regalo",
-    "price": 129,
-    "badge": "Ideal para regalar",
-    "shortDescription": "Un set para regalar calma: vela, sales y un gesto visual delicado.",
-    "description": "Un regalo sensorial que reúne dos piezas esenciales de MATRIA. Ideal para cumpleaños, agradecimientos o detalles con intención.",
+    "price": 28,
+    "badge": "Frescura diaria",
+    "technicalBlend": "70% Strawberry (FO) + 30% Lavanda (OE)",
+    "salesSpeech": "¿Tu auto o clóset se sienten encerrados? Devuélveles la frescura natural que te hace sonreír cada vez que abres una puerta.",
+    "shortDescription": "Sachet aromático para clóset, auto o cajones con un gesto ligero y alegre.",
+    "description": "Un pequeño objeto perfumado para espacios cerrados que necesitan aire, ternura y suavidad.",
+    "descriptions": [
+      "Pensado para rutinas cotidianas donde un detalle sensorial cambia el ánimo."
+    ],
     "features": [
-      "Incluye vela + sales",
-      "Presentación lista para regalo",
-      "Ideal para gifting",
-      "Edición cuidada"
+      "Ideal para clóset o auto",
+      "Formato compacto",
+      "Aroma fresco",
+      "Listo para regalo"
+    ],
+    "discount": {
+      "enabled": true,
+      "type": "fixed",
+      "value": 3
+    },
+    "media": [
+      {
+        "type": "image",
+        "src": "assets/img/products/rocio-matinal/01.svg",
+        "alt": "Sachet Rocío Matinal",
+        "title": "Vista principal",
+        "caption": "Frescura suave para espacios pequeños."
+      }
+    ]
+  },
+  {
+    "id": "ritual-citrico",
+    "collectionId": "alba",
+    "name": "Ritual Cítrico",
+    "category": "Sales",
+    "format": "ritual",
+    "price": 39,
+    "badge": "Baño de pies",
+    "technicalBlend": "100% Eucalipto (OE)",
+    "salesSpeech": "¿Agotamiento tras una mañana intensa? Un baño rápido de pies que recarga tus baterías cuando sientes que ya no puedes más.",
+    "shortDescription": "Sales para tina o baño de pies con una energía verde y despejante.",
+    "description": "Un ritual sencillo para cortar la fatiga, respirar mejor y reiniciar el cuerpo.",
+    "descriptions": [
+      "Perfecto para media mañana o cierre de jornada exigente."
+    ],
+    "features": [
+      "Uso corporal",
+      "Notas herbales",
+      "Sensación refrescante",
+      "Textura mineral"
+    ],
+    "discount": {
+      "enabled": false,
+      "type": "percent",
+      "value": 0
+    },
+    "media": [
+      {
+        "type": "image",
+        "src": "assets/img/products/ritual-citrico/01.svg",
+        "alt": "Sales Ritual Cítrico",
+        "title": "Vista principal",
+        "caption": "Limpieza suave y recuperación rápida."
+      }
+    ]
+  },
+  {
+    "id": "abrazo-de-hogar",
+    "collectionId": "nido",
+    "name": "Abrazo de Hogar",
+    "category": "Vela Pote",
+    "format": "ritual",
+    "price": 88,
+    "badge": "Refugio cálido",
+    "technicalBlend": "100% Almond & Vanilla (FO)",
+    "salesSpeech": "¿Necesitas sentirte segura y en calma? Crea al instante un refugio cálido que te haga sentir protegida del caos exterior, como un abrazo que no termina.",
+    "shortDescription": "Una vela envolvente para crear refugio, calma y una sensación de hogar emocional.",
+    "description": "Notas cremosas y suaves para tardes lentas, descanso emocional y espacios de contención.",
+    "descriptions": [
+      "Diseñada para dormitorios, salas íntimas y momentos de vulnerabilidad."
+    ],
+    "features": [
+      "Cera vegetal",
+      "Perfil cálido",
+      "Encendido lento",
+      "Envase reutilizable"
     ],
     "discount": {
       "enabled": true,
@@ -93,46 +180,125 @@
     "media": [
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Set de regalo premium con elementos sensoriales"
+        "src": "assets/img/products/abrazo-de-hogar/01.svg",
+        "alt": "Vela Abrazo de Hogar",
+        "title": "Vista principal",
+        "caption": "Calidez serena con notas cremosas."
       },
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Packaging delicado para regalo"
+        "src": "assets/img/products/abrazo-de-hogar/02.svg",
+        "alt": "Detalle de Abrazo de Hogar",
+        "title": "Detalle",
+        "caption": "Atmósfera de refugio y suavidad."
       }
     ]
   },
   {
-    "id": "vela-terra-calma",
-    "name": "Vela Terra Calma",
-    "category": "Velas",
+    "id": "dulce-pausa",
+    "collectionId": "nido",
+    "name": "Dulce Pausa",
+    "category": "Wax Melt",
     "format": "ritual",
-    "price": 86,
-    "badge": "Ritual nocturno",
-    "shortDescription": "Perfil terroso, elegante y contemporáneo para una sensación de refugio.",
-    "description": "Pensada para espacios serenos, esta vela aporta profundidad aromática y una presencia visual sobria. Funciona muy bien en dormitorios o escritorios.",
+    "price": 44,
+    "badge": "Suaviza el ambiente",
+    "technicalBlend": "100% Coconut & Vanilla (FO)",
+    "salesSpeech": "¿Día difícil? Disuelve una pieza para suavizar el ambiente y bajar tus revoluciones después de un día de estrés o ansiedad.",
+    "shortDescription": "Wax melt reconfortante con una dulzura suave y cremosa para bajar las revoluciones.",
+    "description": "Ideal para tardes de regreso a casa o momentos en los que quieres sentir cobijo sin esfuerzo.",
+    "descriptions": [
+      "Se siente amable, envolvente y muy fácil de integrar a la rutina."
+    ],
     "features": [
-      "Perfil amaderado",
-      "Envase reutilizable",
-      "Quema uniforme",
-      "Aroma envolvente"
+      "Difusión rápida",
+      "Textura cremosa",
+      "Uso sencillo",
+      "Ideal al volver a casa"
     ],
     "discount": {
-      "enabled": true,
-      "type": "fixed",
-      "value": 8
+      "enabled": false,
+      "type": "percent",
+      "value": 0
     },
     "media": [
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1602872030358-3d84a6390c0e?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Vela premium en espacio minimalista"
-      },
+        "src": "assets/img/products/dulce-pausa/01.svg",
+        "alt": "Wax melt Dulce Pausa",
+        "title": "Vista principal",
+        "caption": "Dulzura sensorial para un final de día más amable."
+      }
+    ]
+  },
+  {
+    "id": "velo-de-seda",
+    "collectionId": "nido",
+    "name": "Velo de Seda",
+    "category": "Sachet",
+    "format": "regalo",
+    "price": 30,
+    "badge": "Textil perfumado",
+    "technicalBlend": "100% Vanilla & Coconut (FO)",
+    "salesSpeech": "¿Tu ropa ha perdido ese olor a limpio? Mantén esa sensación de hogar y suavidad en tus prendas favoritas por mucho más tiempo.",
+    "shortDescription": "Sachet para ropa y textiles con aroma limpio, suave y acogedor.",
+    "description": "Acompaña cajones, prendas favoritas o ropa de cama con una sensación de casa bien cuidada.",
+    "descriptions": [
+      "Perfecto para gifting delicado o detalles de closet."
+    ],
+    "features": [
+      "Para ropa o textiles",
+      "Formato ligero",
+      "Aroma suave",
+      "Uso diario"
+    ],
+    "discount": {
+      "enabled": true,
+      "type": "fixed",
+      "value": 4
+    },
+    "media": [
       {
         "type": "image",
-        "src": "https://images.unsplash.com/photo-1608219951839-a5461df90d42?auto=format&fit=crop&w=1200&q=80",
-        "alt": "Detalle estético de vela y textura natural"
+        "src": "assets/img/products/velo-de-seda/01.svg",
+        "alt": "Sachet Velo de Seda",
+        "title": "Vista principal",
+        "caption": "Suavidad y aroma limpio para textiles."
+      }
+    ]
+  },
+  {
+    "id": "manto-de-flores",
+    "collectionId": "nido",
+    "name": "Manto de Flores",
+    "category": "Sales",
+    "format": "ritual",
+    "price": 41,
+    "badge": "Ritual de ternura",
+    "technicalBlend": "100% Vainilla (FO)",
+    "salesSpeech": "¿Sientes tu piel y ánimo descuidados? Un ritual de ternura pura para recordarte que tú también mereces ser atendida y mimada.",
+    "shortDescription": "Sales de baño con una sensación dulce y envolvente para rituales de ternura.",
+    "description": "Acompañan baños reparadores y pausas profundas con una presencia suave y femenina/unisex.",
+    "descriptions": [
+      "Pensadas para cerrar el día con más amor propio y menos ruido."
+    ],
+    "features": [
+      "Uso corporal",
+      "Perfil dulce",
+      "Ideal para noche",
+      "Textura mineral"
+    ],
+    "discount": {
+      "enabled": false,
+      "type": "percent",
+      "value": 0
+    },
+    "media": [
+      {
+        "type": "image",
+        "src": "assets/img/products/manto-de-flores/01.svg",
+        "alt": "Sales Manto de Flores",
+        "title": "Vista principal",
+        "caption": "Contención sensorial para cuerpo y ánimo."
       }
     ]
   }

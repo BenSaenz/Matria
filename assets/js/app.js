@@ -1,8 +1,9 @@
 const WHATSAPP_NUMBER = '51999999999';
-const PRODUCTS_STORAGE_KEY = 'matria-products-v2';
-const COUPONS_STORAGE_KEY = 'matria-coupons-v2';
-const CART_STORAGE_KEY = 'matria-cart-v2';
-const APPLIED_COUPON_STORAGE_KEY = 'matria-applied-coupon-v2';
+const COLLECTIONS_STORAGE_KEY = 'matria-collections-v3';
+const PRODUCTS_STORAGE_KEY = 'matria-products-v3';
+const COUPONS_STORAGE_KEY = 'matria-coupons-v3';
+const CART_STORAGE_KEY = 'matria-cart-v3';
+const APPLIED_COUPON_STORAGE_KEY = 'matria-applied-coupon-v3';
 
 const testimonials = [
   {
@@ -23,6 +24,7 @@ const testimonials = [
 ];
 
 const state = {
+  collections: [],
   products: [],
   filteredProducts: [],
   coupons: [],
@@ -44,6 +46,7 @@ async function initStorefront() {
   await loadCatalogData();
   bindStorefrontEvents();
   applyFilters();
+  renderCollections();
   renderCart();
   initRevealOnScroll();
 }
@@ -107,22 +110,27 @@ function renderTestimonials() {
 }
 
 async function loadCatalogData() {
-  const [productsDefault, couponsDefault] = await Promise.all([
+  const [collectionsDefault, productsDefault, couponsDefault] = await Promise.all([
+    fetchJson('assets/data/collections.json', []),
     fetchJson('assets/data/products.json', []),
     fetchJson('assets/data/coupons.json', [])
   ]);
 
+  const storedCollections = readStorage(COLLECTIONS_STORAGE_KEY, null);
   const storedProducts = readStorage(PRODUCTS_STORAGE_KEY, null);
   const storedCoupons = readStorage(COUPONS_STORAGE_KEY, null);
 
-  state.products = normalizeProducts(storedProducts || productsDefault);
+  state.collections = normalizeCollections(storedCollections || collectionsDefault).filter(collection => collection.active !== false);
+  state.products = normalizeProducts(storedProducts || productsDefault).filter(product => state.collections.some(collection => collection.id === product.collectionId));
   state.coupons = normalizeCoupons(storedCoupons || couponsDefault);
 
+  populateCollectionFilter();
   populateCategoryFilter();
 }
 
 function bindStorefrontEvents() {
   const searchInput = document.getElementById('searchInput');
+  const collectionFilter = document.getElementById('collectionFilter');
   const categoryFilter = document.getElementById('categoryFilter');
   const sortFilter = document.getElementById('sortFilter');
   const formatFilter = document.getElementById('formatFilter');
@@ -130,7 +138,7 @@ function bindStorefrontEvents() {
   const applyCouponButton = document.getElementById('applyCouponButton');
   const checkoutWhatsApp = document.getElementById('checkoutWhatsApp');
 
-  [searchInput, categoryFilter, sortFilter, formatFilter].forEach(control => {
+  [searchInput, collectionFilter, categoryFilter, sortFilter, formatFilter].forEach(control => {
     control?.addEventListener('input', applyFilters);
     control?.addEventListener('change', applyFilters);
   });
@@ -151,31 +159,138 @@ function bindStorefrontEvents() {
   });
 }
 
+function populateCollectionFilter() {
+  const select = document.getElementById('collectionFilter');
+  if (!select) return;
+  const collections = [...state.collections].sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || a.name.localeCompare(b.name, 'es'));
+  select.innerHTML = `<option value="todos">Todas</option>${collections.map(collection => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.code ? `${collection.code}. ${collection.name}` : collection.name)}</option>`).join('')}`;
+}
+
 function populateCategoryFilter() {
   const select = document.getElementById('categoryFilter');
   if (!select) return;
-  const categories = [...new Set(state.products.map(product => product.category))].sort();
+  const categories = [...new Set(state.products.map(product => product.category))].sort((a, b) => a.localeCompare(b, 'es'));
   select.innerHTML = `<option value="todos">Todas</option>${categories.map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}`;
+}
+
+function renderCollections() {
+  const grid = document.getElementById('collectionsGrid');
+  if (!grid) return;
+
+  const visibleCollections = [...state.collections]
+    .filter(collection => collection.showOnHome)
+    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || a.name.localeCompare(b.name, 'es'));
+
+  if (!visibleCollections.length) {
+    grid.innerHTML = '<div class="empty-state"><strong>No hay colecciones activas.</strong><p>Agrega colecciones desde tu panel interno y vuelve a exportar <code>collections.json</code>.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = visibleCollections.map(collection => {
+    const media = collection.media?.[0];
+    const linkedProducts = state.products.filter(product => product.collectionId === collection.id).length;
+    return `
+      <article class="collection-card reveal">
+        <div class="collection-media">
+          ${renderMedia(media, collection.name)}
+        </div>
+        <div class="collection-body">
+          <div class="collection-top">
+            <span class="eyebrow">${escapeHtml(collection.code ? `${collection.code}. ${collection.name}` : collection.name)}</span>
+            <h3>${escapeHtml(collection.title || collection.name)}</h3>
+            <p>${escapeHtml(collection.tagline || '')}</p>
+          </div>
+          <div class="collection-meta">
+            ${collection.packName ? `<span class="badge">${escapeHtml(collection.packName)}</span>` : ''}
+            <span class="badge">${linkedProducts} producto${linkedProducts === 1 ? '' : 's'}</span>
+          </div>
+          <p class="collection-story">${escapeHtml(collection.packStory || collection.story || '')}</p>
+          <div class="product-actions">
+            <button class="btn btn-primary" type="button" data-filter-collection="${escapeHtml(collection.id)}">${escapeHtml(collection.ctaLabel || 'Ver colección')}</button>
+            <button class="btn btn-ghost" type="button" data-see-story="${escapeHtml(collection.id)}">Leer concepto</button>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-filter-collection]').forEach(button => {
+    button.addEventListener('click', () => filterByCollection(button.dataset.filterCollection));
+  });
+
+  grid.querySelectorAll('[data-see-story]').forEach(button => {
+    button.addEventListener('click', () => {
+      const collection = getCollectionById(button.dataset.seeStory);
+      if (!collection) return;
+      alert(`${collection.name}\n\n${collection.story || collection.packStory || ''}`);
+    });
+  });
+}
+
+function filterByCollection(collectionId) {
+  const filter = document.getElementById('collectionFilter');
+  if (filter) filter.value = collectionId;
+  applyFilters();
+  document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function applyFilters() {
   const query = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+  const collectionId = document.getElementById('collectionFilter')?.value || 'todos';
   const category = document.getElementById('categoryFilter')?.value || 'todos';
   const format = document.getElementById('formatFilter')?.value || 'todos';
   const sort = document.getElementById('sortFilter')?.value || 'destacados';
 
   let items = [...state.products].filter(product => {
-    const text = [product.name, product.category, product.description, product.shortDescription].join(' ').toLowerCase();
-    return (!query || text.includes(query)) && (category === 'todos' || product.category === category) && (format === 'todos' || product.format === format);
+    const collection = getCollectionById(product.collectionId);
+    const text = [product.name, product.category, product.description, product.shortDescription, product.salesSpeech, product.technicalBlend, collection?.name || '', collection?.tagline || '']
+      .join(' ')
+      .toLowerCase();
+
+    return (!query || text.includes(query))
+      && (collectionId === 'todos' || product.collectionId === collectionId)
+      && (category === 'todos' || product.category === category)
+      && (format === 'todos' || product.format === format);
   });
 
   if (sort === 'precio-asc') items.sort((a, b) => currentPrice(a) - currentPrice(b));
   if (sort === 'precio-desc') items.sort((a, b) => currentPrice(b) - currentPrice(a));
-  if (sort === 'descuento') items.sort((a, b) => discountValue(a) - discountValue(b)).reverse();
-  if (sort === 'destacados') items.sort((a, b) => Number(Boolean(b.badge)) - Number(Boolean(a.badge)) || discountValue(b) - discountValue(a));
+  if (sort === 'descuento') items.sort((a, b) => discountAmount(a) - discountAmount(b)).reverse();
+  if (sort === 'destacados') items.sort((a, b) => Number(Boolean(b.badge)) - Number(Boolean(a.badge)) || discountAmount(b) - discountAmount(a));
 
   state.filteredProducts = items;
+  renderActiveCollectionChip(collectionId);
   renderProducts();
+}
+
+function renderActiveCollectionChip(collectionId) {
+  const chip = document.getElementById('activeCollectionChip');
+  if (!chip) return;
+
+  if (!collectionId || collectionId === 'todos') {
+    chip.hidden = true;
+    chip.innerHTML = '';
+    return;
+  }
+
+  const collection = getCollectionById(collectionId);
+  if (!collection) {
+    chip.hidden = true;
+    chip.innerHTML = '';
+    return;
+  }
+
+  chip.hidden = false;
+  chip.innerHTML = `
+    <span class="badge">Colección activa: ${escapeHtml(collection.name)}</span>
+    <button class="btn btn-ghost btn-small" type="button" id="clearCollectionFilter">Quitar filtro</button>
+  `;
+
+  chip.querySelector('#clearCollectionFilter')?.addEventListener('click', () => {
+    const filter = document.getElementById('collectionFilter');
+    if (filter) filter.value = 'todos';
+    applyFilters();
+  });
 }
 
 function renderProducts() {
@@ -191,6 +306,7 @@ function renderProducts() {
     const media = product.media?.[0];
     const current = currentPrice(product);
     const hasDiscount = Boolean(product.discount && Number(product.discount.value) > 0);
+    const collection = getCollectionById(product.collectionId);
 
     return `
       <article class="product-card reveal">
@@ -198,6 +314,7 @@ function renderProducts() {
           ${renderMedia(media, product.name)}
           <div class="product-badges">
             ${product.badge ? `<span class="badge">${escapeHtml(product.badge)}</span>` : ''}
+            ${collection ? `<span class="badge">${escapeHtml(collection.name)}</span>` : ''}
             ${hasDiscount ? `<span class="badge">${renderDiscountLabel(product.discount)}</span>` : ''}
           </div>
         </div>
@@ -207,7 +324,9 @@ function renderProducts() {
             <h3>${escapeHtml(product.name)}</h3>
             <p>${escapeHtml(product.shortDescription || product.description || '')}</p>
           </div>
-          <div class="product-meta">
+          <div class="product-meta product-meta-stack">
+            ${collection ? `<span class="assistive"><strong>Colección:</strong> ${escapeHtml(collection.name)}</span>` : ''}
+            ${product.technicalBlend ? `<span class="assistive"><strong>Mezcla:</strong> ${escapeHtml(product.technicalBlend)}</span>` : ''}
             <div class="price-wrap">
               <span class="price-current">${formatCurrency(current)}</span>
               ${hasDiscount ? `<span class="price-old">${formatCurrency(product.price)}</span>` : ''}
@@ -264,6 +383,7 @@ function renderProductModal() {
 
   const current = currentPrice(product);
   const activeMedia = product.media?.[state.activeMediaIndex] || product.media?.[0];
+  const collection = getCollectionById(product.collectionId);
 
   body.innerHTML = `
     <article class="product-detail">
@@ -284,8 +404,11 @@ function renderProductModal() {
           <span class="price-current">${formatCurrency(current)}</span>
           ${product.discount && Number(product.discount.value) > 0 ? `<span class="price-old">${formatCurrency(product.price)}</span><span class="badge">${renderDiscountLabel(product.discount)}</span>` : ''}
         </div>
+        ${collection ? `<div class="notice"><strong>Colección:</strong> ${escapeHtml(collection.code ? `${collection.code}. ${collection.name}` : collection.name)}<br />${escapeHtml(collection.tagline || '')}</div>` : ''}
+        ${product.technicalBlend ? `<div class="spec-line"><strong>Mezcla técnica:</strong> ${escapeHtml(product.technicalBlend)}</div>` : ''}
+        ${product.salesSpeech ? `<div class="spec-line"><strong>Gancho de venta:</strong> ${escapeHtml(product.salesSpeech)}</div>` : ''}
         <p>${escapeHtml(product.description || '')}</p>
-        <div class="notice">Este componente admite múltiples imágenes o videos por producto. Puedes gestionarlos desde <strong>admin.html</strong>.</div>
+        ${Array.isArray(product.descriptions) && product.descriptions.length ? `<div class="description-stack">${product.descriptions.map(item => `<p>${escapeHtml(item)}</p>`).join('')}</div>` : ''}
         <div>
           <strong>Incluye</strong>
           <ul>
@@ -483,8 +606,11 @@ function checkoutViaWhatsApp() {
   const couponResult = getCouponDiscount(totalBeforeCoupon, state.appliedCoupon);
   const total = Math.max(totalBeforeCoupon - couponResult.amount, 0);
 
-  const lines = detailedItems.map(item => `• ${item.name} x${item.quantity} — ${formatCurrency(currentPrice(item) * item.quantity)}`);
-  const couponLine = state.appliedCoupon && couponResult.valid ? `Cupón: ${state.appliedCoupon.code} — ${couponResult.label}` : 'Cupón: no aplicado';
+  const lines = detailedItems.map(item => {
+    const collection = getCollectionById(item.collectionId);
+    const collectionText = collection ? ` [${collection.name}]` : '';
+    return `• ${item.name}${collectionText} x${item.quantity} — ${formatCurrency(currentPrice(item) * item.quantity)}`;
+  });
 
   const message = [
     'Hola MATRIA, quiero realizar este pedido:',
@@ -493,12 +619,12 @@ function checkoutViaWhatsApp() {
     '',
     `Subtotal: ${formatCurrency(subtotal)}`,
     `Descuento productos: ${formatCurrency(productDiscount)}`,
-    `${couponLine}`,
     `Descuento cupón: ${formatCurrency(couponResult.amount)}`,
     `Total: ${formatCurrency(total)}`,
+    state.appliedCoupon?.code ? `Cupón aplicado: ${state.appliedCoupon.code}` : '',
     '',
     'Quedo atenta para coordinar pago y entrega. Gracias.'
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank', 'noopener');
@@ -518,39 +644,76 @@ function closeCart() {
   drawer.setAttribute('aria-hidden', 'true');
 }
 
-function currentPrice(product) {
+function discountAmount(product) {
+  if (!product.discount || !product.discount.enabled || Number(product.discount.value) <= 0) return 0;
   const base = Number(product.price || 0);
-  const discount = product.discount;
-  if (!discount || !discount.enabled || Number(discount.value) <= 0) return Number(base.toFixed(2));
-
-  const amount = discount.type === 'fixed'
-    ? Number(discount.value)
-    : base * (Number(discount.value) / 100);
-
-  return Number(Math.max(base - amount, 0).toFixed(2));
+  const amount = product.discount.type === 'fixed'
+    ? Number(product.discount.value || 0)
+    : base * (Number(product.discount.value || 0) / 100);
+  return Number(Math.min(amount, base).toFixed(2));
 }
 
-function discountValue(product) {
-  return Number(product.discount?.enabled ? product.discount.value || 0 : 0);
+function currentPrice(product) {
+  const base = Number(product.price || 0);
+  return Number(Math.max(base - discountAmount(product), 0).toFixed(2));
 }
 
 function renderDiscountLabel(discount) {
-  if (!discount || !discount.enabled || Number(discount.value) <= 0) return '';
+  if (!discount || !discount.enabled || Number(discount.value) <= 0) return 'Sin descuento';
   return discount.type === 'fixed' ? `-${formatCurrency(discount.value)}` : `-${discount.value}%`;
+}
+
+function renderMedia(media, fallbackAlt = '') {
+  if (!media || !media.src) {
+    return '<div class="media-fallback" aria-hidden="true"></div>';
+  }
+
+  if (media.type === 'video') {
+    return `<video muted playsinline loop autoplay title="${escapeHtml(media.title || fallbackAlt)}"><source src="${escapeHtml(media.src)}" /></video>`;
+  }
+
+  return `<img src="${escapeHtml(media.src)}" alt="${escapeHtml(media.alt || fallbackAlt)}" title="${escapeHtml(media.title || '')}" loading="lazy" />`;
+}
+
+function getCollectionById(collectionId) {
+  return state.collections.find(collection => collection.id === collectionId) || null;
+}
+
+function normalizeCollections(list) {
+  return (Array.isArray(list) ? list : []).map(item => ({
+    id: item.id || slugify(item.name || `collection-${Date.now()}`),
+    code: item.code || '',
+    name: item.name || 'Colección sin nombre',
+    title: item.title || item.name || 'Colección',
+    tagline: item.tagline || '',
+    story: item.story || '',
+    packName: item.packName || '',
+    packStory: item.packStory || '',
+    ctaLabel: item.ctaLabel || 'Ver colección',
+    featured: Boolean(item.featured),
+    showOnHome: item.showOnHome !== false,
+    sortOrder: Number(item.sortOrder || 0),
+    active: item.active !== false,
+    media: normalizeMedia(item.media)
+  }));
 }
 
 function normalizeProducts(list) {
   return (Array.isArray(list) ? list : []).map(product => ({
     id: product.id || slugify(product.name || `producto-${Date.now()}`),
+    collectionId: product.collectionId || '',
     name: product.name || 'Producto sin nombre',
-    category: product.category || 'Velas',
+    category: product.category || 'Vela Pote',
     format: product.format || 'ritual',
     price: Number(product.price || 0),
     badge: product.badge || '',
+    technicalBlend: product.technicalBlend || '',
+    salesSpeech: product.salesSpeech || '',
     shortDescription: product.shortDescription || '',
     description: product.description || '',
+    descriptions: Array.isArray(product.descriptions) ? product.descriptions.filter(Boolean) : [],
     features: Array.isArray(product.features) ? product.features.filter(Boolean) : [],
-    media: Array.isArray(product.media) ? product.media.filter(item => item && item.src) : [],
+    media: normalizeMedia(product.media),
     discount: {
       enabled: Boolean(product.discount?.enabled),
       type: product.discount?.type === 'fixed' ? 'fixed' : 'percent',
@@ -571,30 +734,22 @@ function normalizeCoupons(list) {
   }));
 }
 
-async function fetchJson(url, fallback) {
-  try {
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) throw new Error('No se pudo cargar');
-    return await response.json();
-  } catch {
-    return fallback;
-  }
+function normalizeMedia(list) {
+  return (Array.isArray(list) ? list : []).map(item => ({
+    type: item?.type === 'video' ? 'video' : 'image',
+    src: item?.src || '',
+    alt: item?.alt || '',
+    title: item?.title || '',
+    caption: item?.caption || ''
+  })).filter(item => item.src);
 }
 
 function persistCart() {
-  writeStorage(CART_STORAGE_KEY, state.cart);
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cart));
 }
 
 function persistAppliedCoupon() {
-  writeStorage(APPLIED_COUPON_STORAGE_KEY, state.appliedCoupon);
-}
-
-function renderMedia(media, alt = '') {
-  if (!media) return '<div aria-hidden="true" style="width:100%;height:100%;background:linear-gradient(160deg,#d8cec4 0%,#c6b7a8 45%,#f2ede6 100%);"></div>';
-  if (media.type === 'video') {
-    return `<video muted playsinline loop autoplay aria-label="${escapeHtml(alt)}"><source src="${escapeHtml(media.src)}" /></video>`;
-  }
-  return `<img src="${escapeHtml(media.src)}" alt="${escapeHtml(media.alt || alt)}" loading="lazy" />`;
+  localStorage.setItem(APPLIED_COUPON_STORAGE_KEY, JSON.stringify(state.appliedCoupon));
 }
 
 function formatCurrency(value) {
@@ -605,13 +760,23 @@ function formatCurrency(value) {
   }).format(Number(value) || 0);
 }
 
-function escapeHtml(text) {
-  return String(text ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+async function fetchJson(url, fallback) {
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('No se pudo cargar');
+    return await response.json();
+  } catch {
+    return fallback;
+  }
+}
+
+function readStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function slugify(text) {
@@ -624,17 +789,13 @@ function slugify(text) {
     .replace(/^-+|-+$/g, '') || `item-${Date.now()}`;
 }
 
-function readStorage(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+function escapeHtml(text) {
+  return String(text ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 function initRevealOnScroll() {

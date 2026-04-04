@@ -1,0 +1,50 @@
+[
+  {
+    "id": "alba",
+    "code": "01",
+    "name": "ALBA",
+    "title": "ALBA",
+    "tagline": "El origen del día, la luz pura antes del caos.",
+    "story": "Una colección diseñada para despejar la niebla mental de la mañana y devolverte foco, frescura y claridad.",
+    "packName": "Pack: El Despertar",
+    "packStory": "¿Te sientes abrumada al despertar? Recupera el control de tu jornada desde el primer rayo de luz, despejando la niebla mental.",
+    "ctaLabel": "Explorar ALBA",
+    "featured": true,
+    "showOnHome": true,
+    "sortOrder": 1,
+    "active": true,
+    "media": [
+      {
+        "type": "image",
+        "src": "assets/img/collections/alba/cover.svg",
+        "alt": "Colección Alba de MATRIA",
+        "title": "Colección ALBA",
+        "caption": "Luz suave, enfoque y frescura para empezar el día."
+      }
+    ]
+  },
+  {
+    "id": "nido",
+    "code": "02",
+    "name": "NIDO",
+    "title": "NIDO",
+    "tagline": "El útero, el espacio seguro donde uno puede ser vulnerable.",
+    "story": "Una colección para volver a tu centro, sentir refugio y envolver la rutina en ternura, suavidad y contención.",
+    "packName": "Pack: El Abrazo",
+    "packStory": "¿El mundo exterior se siente hostil? Regresa a tu centro en un refugio de calidez que te envuelve como un abrazo eterno.",
+    "ctaLabel": "Explorar NIDO",
+    "featured": true,
+    "showOnHome": true,
+    "sortOrder": 2,
+    "active": true,
+    "media": [
+      {
+        "type": "image",
+        "src": "assets/img/collections/nido/cover.svg",
+        "alt": "Colección Nido de MATRIA",
+        "title": "Colección NIDO",
+        "caption": "Refugio, contención y dulzura para volver a casa."
+      }
+    ]
+  }
+]

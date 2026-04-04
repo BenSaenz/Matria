@@ -5,16 +5,16 @@
     "type": "percent",
     "value": 10,
     "minOrder": 80,
-    "description": "Campaña de bienvenida",
+    "description": "Bienvenida para primeras compras",
     "active": true
   },
   {
-    "id": "ritual15",
-    "code": "RITUAL15",
+    "id": "ritual20",
+    "code": "RITUAL20",
     "type": "fixed",
-    "value": 15,
-    "minOrder": 120,
-    "description": "Descuento fijo para sets y compras grandes",
+    "value": 20,
+    "minOrder": 150,
+    "description": "Descuento fijo para tickets altos",
     "active": true
   }
 ]

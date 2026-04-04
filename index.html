@@ -31,12 +31,11 @@
       <nav class="primary-nav" id="primaryNav" aria-label="Navegación principal">
         <ul class="nav-list">
           <li><a href="#inicio" aria-current="page">Inicio</a></li>
-          <li><a href="#catalogo">Catálogo</a></li>
           <li><a href="#colecciones">Colecciones</a></li>
+          <li><a href="#catalogo">Catálogo</a></li>
           <li><a href="#marca">Marca</a></li>
           <li><a href="#resenas">Reseñas</a></li>
           <li><a href="#contacto">Contacto</a></li>
-          <li><a href="admin.html">Gestión</a></li>
         </ul>
       </nav>
 
@@ -71,7 +70,7 @@
                 Una marca pensada para mujeres que desean regalarse una pausa. Diseñamos objetos sensoriales que transforman lo cotidiano en un pequeño ritual de calma, presencia y belleza.
               </p>
               <div class="hero-actions">
-                <a class="btn btn-primary" href="#catalogo">Descubrir la colección</a>
+                <a class="btn btn-primary" href="#colecciones">Descubrir colecciones</a>
                 <a class="btn btn-ghost" href="#marca">Conocer la marca</a>
               </div>
             </div>
@@ -137,25 +136,52 @@
       </div>
     </section>
 
+    <section class="section" id="colecciones" aria-labelledby="colecciones-title">
+      <div class="container">
+        <div class="section-header reveal">
+          <span class="eyebrow">Colecciones</span>
+          <h2 id="colecciones-title">Universos sensoriales para distintos estados del día</h2>
+          <p>
+            Cada colección se administra por separado y organiza productos, relato, imagen principal y orden visual dentro de la home. El bloque se alimenta desde <code>collections.json</code>.
+          </p>
+        </div>
+        <div class="collections-grid" id="collectionsGrid" aria-live="polite"></div>
+      </div>
+    </section>
+
     <section class="section" id="catalogo" aria-labelledby="catalogo-title">
       <div class="container">
         <div class="section-header reveal">
           <span class="eyebrow">Catálogo y ecommerce</span>
-          <h2 id="catalogo-title">Colección MATRIA</h2>
+          <h2 id="catalogo-title">Catálogo MATRIA</h2>
           <p>
-            Explora velas aromáticas y sales orgánicas con fichas visuales elegantes, selección de producto, carrito y cierre de compra por WhatsApp con resumen automático del pedido y monto total.
+            Explora productos por colección, categoría o formato. El carrito genera un resumen limpio para cerrar la compra por WhatsApp con subtotal, descuentos y total final.
           </p>
         </div>
 
         <div class="catalog-toolbar reveal" role="search" aria-label="Filtros del catálogo">
           <div class="field">
             <label for="searchInput">Buscar producto</label>
-            <input id="searchInput" type="search" placeholder="Ej. vela, lavanda, sales..." />
+            <input id="searchInput" type="search" placeholder="Ej. vela, alba, ritual..." />
+          </div>
+          <div class="field">
+            <label for="collectionFilter">Colección</label>
+            <select id="collectionFilter">
+              <option value="todos">Todas</option>
+            </select>
           </div>
           <div class="field">
             <label for="categoryFilter">Categoría</label>
             <select id="categoryFilter">
               <option value="todos">Todas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="formatFilter">Formato</label>
+            <select id="formatFilter">
+              <option value="todos">Todos</option>
+              <option value="ritual">Ritual individual</option>
+              <option value="regalo">Regalo</option>
             </select>
           </div>
           <div class="field">
@@ -167,16 +193,9 @@
               <option value="descuento">Mayor descuento</option>
             </select>
           </div>
-          <div class="field">
-            <label for="formatFilter">Formato</label>
-            <select id="formatFilter">
-              <option value="todos">Todos</option>
-              <option value="ritual">Ritual individual</option>
-              <option value="regalo">Regalo</option>
-            </select>
-          </div>
         </div>
 
+        <div class="catalog-active-chip" id="activeCollectionChip" hidden></div>
         <div class="products-grid" id="productsGrid" aria-live="polite"></div>
       </div>
     </section>
@@ -211,47 +230,6 @@
       </div>
     </section>
 
-    <section class="section" id="colecciones" aria-labelledby="colecciones-title">
-      <div class="container">
-        <div class="section-header reveal">
-          <span class="eyebrow">Colecciones</span>
-          <h2 id="colecciones-title">Rituales para distintos momentos</h2>
-          <p>
-            Las categorías pueden crecer por intención de uso, temporada o tipo de producto. Esta estructura permite escalar catálogo, storytelling y campañas sin romper la consistencia visual.
-          </p>
-        </div>
-
-        <div class="categories-grid">
-          <article class="category-card reveal">
-            <div>
-              <span class="eyebrow">Colección 01</span>
-              <h3>Calma lenta</h3>
-            </div>
-            <p>Velas suaves y sales de descanso para cerrar el día, bajar el ritmo y crear un espacio íntimo.</p>
-            <a class="btn btn-ghost" href="#catalogo">Ver selección</a>
-          </article>
-
-          <article class="category-card reveal">
-            <div>
-              <span class="eyebrow">Colección 02</span>
-              <h3>Ritual de regalo</h3>
-            </div>
-            <p>Sets pensados para regalar presencia, autocuidado y un gesto elegante en fechas especiales.</p>
-            <a class="btn btn-ghost" href="#catalogo">Explorar sets</a>
-          </article>
-
-          <article class="category-card reveal">
-            <div>
-              <span class="eyebrow">Colección 03</span>
-              <h3>Raíz botánica</h3>
-            </div>
-            <p>Aromas con notas herbales, terrosas y luminosas para una experiencia contemporánea y sensorial.</p>
-            <a class="btn btn-ghost" href="#catalogo">Descubrir aromas</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <section class="section" id="resenas" aria-labelledby="resenas-title">
       <div class="container">
         <div class="section-header reveal">
@@ -272,7 +250,7 @@
           <div>
             <span class="eyebrow">CTA de conversión</span>
             <h2>Arma tu ritual y recíbelo por WhatsApp</h2>
-            <p>Selecciona productos, aplica un cupón si corresponde y envía el resumen directo para cerrar la compra de forma simple y cercana.</p>
+            <p>Selecciona productos, revisa el monto total y envía el resumen directo para cerrar la compra de forma simple y cercana.</p>
           </div>
           <div class="cta-actions">
             <button class="btn btn-primary" type="button" data-open-cart>Ver carrito</button>
@@ -339,9 +317,9 @@
         <div class="footer-col">
           <h4>Navegación</h4>
           <a href="#inicio">Inicio</a>
+          <a href="#colecciones">Colecciones</a>
           <a href="#catalogo">Catálogo</a>
           <a href="#marca">Marca</a>
-          <a href="#contacto">Contacto</a>
         </div>
         <div class="footer-col">
           <h4>Contacto</h4>
