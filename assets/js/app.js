@@ -1,3 +1,5 @@
+const STORE_SYNC_KEY = 'matria-sync-revision-v1';
+const API_BASE = window.MATRIA_API_BASE || document.querySelector('meta[name="matria-api-base"]')?.content || '/api';
 const WHATSAPP_NUMBER = '51999999999';
 const COLLECTIONS_STORAGE_KEY = 'matria-collections-v3';
 const PRODUCTS_STORAGE_KEY = 'matria-products-v3';
@@ -45,6 +47,7 @@ async function initStorefront() {
   renderTestimonials();
   await loadCatalogData();
   bindStorefrontEvents();
+  listenForStoreSync();
   applyFilters();
   renderCollections();
   renderCart();
@@ -110,22 +113,117 @@ function renderTestimonials() {
 }
 
 async function loadCatalogData() {
+  const payload = await getStorePayload();
+  const currentFilters = snapshotFilters();
+
+  state.catalogRevision = payload.revision || state.catalogRevision;
+  state.dataSource = payload.source || 'static';
+  state.collections = normalizeCollections(payload.collections).filter(collection => collection.active !== false);
+  state.products = normalizeProducts(payload.products).filter(product => state.collections.some(collection => collection.id === product.collectionId));
+  state.coupons = normalizeCoupons(payload.coupons);
+  if (state.appliedCoupon?.code) {
+    state.appliedCoupon = state.coupons.find(coupon => coupon.code === state.appliedCoupon.code) || state.appliedCoupon;
+    persistAppliedCoupon();
+  }
+
+  populateCollectionFilter(currentFilters.collectionId);
+  populateCategoryFilter(currentFilters.category);
+  restoreFilters(currentFilters);
+}
+
+async function getStorePayload() {
+  const remotePayload = await fetchRemoteStore();
+  if (remotePayload) {
+    cacheRemoteStore(remotePayload);
+    return {
+      revision: remotePayload.revision || null,
+      source: 'd1',
+      collections: remotePayload.collections || [],
+      products: remotePayload.products || [],
+      coupons: remotePayload.coupons || []
+    };
+  }
+
   const [collectionsDefault, productsDefault, couponsDefault] = await Promise.all([
     fetchJson('assets/data/collections.json', []),
     fetchJson('assets/data/products.json', []),
     fetchJson('assets/data/coupons.json', [])
   ]);
 
-  const storedCollections = readStorage(COLLECTIONS_STORAGE_KEY, null);
-  const storedProducts = readStorage(PRODUCTS_STORAGE_KEY, null);
-  const storedCoupons = readStorage(COUPONS_STORAGE_KEY, null);
+  return {
+    revision: readStorage(STORE_SYNC_KEY, null),
+    source: 'static',
+    collections: readStorage(COLLECTIONS_STORAGE_KEY, null) || collectionsDefault,
+    products: readStorage(PRODUCTS_STORAGE_KEY, null) || productsDefault,
+    coupons: readStorage(COUPONS_STORAGE_KEY, null) || couponsDefault
+  };
+}
 
-  state.collections = normalizeCollections(storedCollections || collectionsDefault).filter(collection => collection.active !== false);
-  state.products = normalizeProducts(storedProducts || productsDefault).filter(product => state.collections.some(collection => collection.id === product.collectionId));
-  state.coupons = normalizeCoupons(storedCoupons || couponsDefault);
+async function fetchRemoteStore() {
+  const payload = await fetchJson(`${API_BASE.replace(/\/$/, '')}/store`, null);
+  if (!payload || !Array.isArray(payload.collections) || !Array.isArray(payload.products) || !Array.isArray(payload.coupons)) {
+    return null;
+  }
+  return payload;
+}
 
-  populateCollectionFilter();
-  populateCategoryFilter();
+function cacheRemoteStore(payload) {
+  writeStorage(COLLECTIONS_STORAGE_KEY, payload.collections || []);
+  writeStorage(PRODUCTS_STORAGE_KEY, payload.products || []);
+  writeStorage(COUPONS_STORAGE_KEY, payload.coupons || []);
+  if (payload.revision) {
+    writeStorage(STORE_SYNC_KEY, payload.revision);
+  }
+}
+
+function snapshotFilters() {
+  return {
+    query: document.getElementById('searchInput')?.value || '',
+    collectionId: document.getElementById('collectionFilter')?.value || 'todos',
+    category: document.getElementById('categoryFilter')?.value || 'todos',
+    format: document.getElementById('formatFilter')?.value || 'todos',
+    sort: document.getElementById('sortFilter')?.value || 'destacados'
+  };
+}
+
+function restoreFilters(filters = {}) {
+  const searchInput = document.getElementById('searchInput');
+  const collectionFilter = document.getElementById('collectionFilter');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const formatFilter = document.getElementById('formatFilter');
+  const sortFilter = document.getElementById('sortFilter');
+
+  if (searchInput) searchInput.value = filters.query || '';
+  if (collectionFilter) collectionFilter.value = [...collectionFilter.options].some(option => option.value === filters.collectionId) ? filters.collectionId : 'todos';
+  if (categoryFilter) categoryFilter.value = [...categoryFilter.options].some(option => option.value === filters.category) ? filters.category : 'todos';
+  if (formatFilter) formatFilter.value = [...formatFilter.options].some(option => option.value === filters.format) ? filters.format : 'todos';
+  if (sortFilter) sortFilter.value = [...sortFilter.options].some(option => option.value === filters.sort) ? filters.sort : 'destacados';
+}
+
+async function refreshStorefrontData() {
+  const filters = snapshotFilters();
+  await loadCatalogData();
+  restoreFilters(filters);
+  applyFilters();
+  renderCollections();
+  renderCart();
+  if (state.activeProduct) {
+    const updatedProduct = state.products.find(product => product.id === state.activeProduct.id);
+    state.activeProduct = updatedProduct || null;
+    if (updatedProduct) {
+      state.activeMediaIndex = Math.min(state.activeMediaIndex, Math.max((updatedProduct.media?.length || 1) - 1, 0));
+      renderProductModal();
+    } else {
+      closeProduct();
+    }
+  }
+}
+
+function listenForStoreSync() {
+  window.addEventListener('storage', async event => {
+    if (event.key !== STORE_SYNC_KEY || !event.newValue || event.newValue === event.oldValue) return;
+    await refreshStorefrontData();
+  });
 }
 
 function bindStorefrontEvents() {
@@ -159,18 +257,20 @@ function bindStorefrontEvents() {
   });
 }
 
-function populateCollectionFilter() {
+function populateCollectionFilter(selectedValue = 'todos') {
   const select = document.getElementById('collectionFilter');
   if (!select) return;
   const collections = [...state.collections].sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || a.name.localeCompare(b.name, 'es'));
   select.innerHTML = `<option value="todos">Todas</option>${collections.map(collection => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.code ? `${collection.code}. ${collection.name}` : collection.name)}</option>`).join('')}`;
+  select.value = [...select.options].some(option => option.value === selectedValue) ? selectedValue : 'todos';
 }
 
-function populateCategoryFilter() {
+function populateCategoryFilter(selectedValue = 'todos') {
   const select = document.getElementById('categoryFilter');
   if (!select) return;
   const categories = [...new Set(state.products.map(product => product.category))].sort((a, b) => a.localeCompare(b, 'es'));
   select.innerHTML = `<option value="todos">Todas</option>${categories.map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}`;
+  select.value = [...select.options].some(option => option.value === selectedValue) ? selectedValue : 'todos';
 }
 
 function renderCollections() {
@@ -182,7 +282,7 @@ function renderCollections() {
     .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || a.name.localeCompare(b.name, 'es'));
 
   if (!visibleCollections.length) {
-    grid.innerHTML = '<div class="empty-state"><strong>No hay colecciones activas.</strong><p>Agrega colecciones desde tu panel interno y vuelve a exportar <code>collections.json</code>.</p></div>';
+    grid.innerHTML = '<div class="empty-state"><strong>No hay colecciones activas.</strong><p>Agrega colecciones desde tu panel interno y se publicarán automáticamente al detectar la sincronización con D1.</p></div>';
     return;
   }
 
@@ -745,11 +845,11 @@ function normalizeMedia(list) {
 }
 
 function persistCart() {
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cart));
+  writeStorage(CART_STORAGE_KEY, state.cart);
 }
 
 function persistAppliedCoupon() {
-  localStorage.setItem(APPLIED_COUPON_STORAGE_KEY, JSON.stringify(state.appliedCoupon));
+  writeStorage(APPLIED_COUPON_STORAGE_KEY, state.appliedCoupon);
 }
 
 function formatCurrency(value) {
@@ -776,6 +876,14 @@ function readStorage(key, fallback) {
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore storage write failures
   }
 }
 

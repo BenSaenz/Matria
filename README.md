@@ -1,49 +1,52 @@
-# MATRIA · GitHub + Cloudflare Pages
+# MATRIA · GitHub + Cloudflare Pages + D1
 
-Proyecto estático en HTML para tienda y panel interno de gestión.
+Proyecto HTML para tienda pública y panel de administración con sincronización automática usando **Cloudflare Pages Functions + D1**.
 
-## Archivos principales
+## Estructura
 
 - `index.html` → tienda pública
-- `admin.html` → panel interno de gestión
+- `admin.html` → panel de administración
 - `assets/css/styles.css` → estilos globales
-- `assets/js/app.js` → lógica de la tienda
-- `assets/js/admin.js` → lógica del panel interno
-- `assets/data/collections.json` → colecciones
-- `assets/data/products.json` → productos
-- `assets/data/coupons.json` → cupones
-- `assets/img/` → imágenes físicas del sitio
+- `assets/js/app.js` → lógica de tienda
+- `assets/js/admin.js` → lógica de administración
+- `assets/data/*.json` → respaldo estático y referencia
+- `functions/api/*.ts` → API automática bajo `/api/*`
+- `functions/_shared/*.ts` → utilidades D1
+- `migrations/*.sql` → esquema y seed inicial
+- `wrangler.jsonc` → binding de D1
 
-## Estructura recomendada para imágenes
+## Qué hace
 
-- `assets/img/collections/<slug-coleccion>/cover.webp`
-- `assets/img/products/<slug-producto>/01.webp`
-- `assets/img/products/<slug-producto>/02.webp`
+- `index.html` lee colecciones, productos y cupones desde `/api/store`
+- `admin.html` guarda cambios en D1 con `PUT /api/collections`, `PUT /api/products` y `PUT /api/coupons`
+- cuando admin guarda, actualiza `localStorage` con una revisión y la tienda se refresca sola en otra pestaña por el evento `storage`
+- si la API falla, la tienda puede seguir usando el respaldo estático de `assets/data/*.json`
 
-## Cómo actualizar el sitio
+## Antes de publicar
 
-1. Sube o reemplaza imágenes dentro de `assets/img/`.
-2. Abre `admin.html` localmente o en tu entorno publicado.
-3. Edita colecciones, productos y cupones.
-4. Exporta `collections.json`, `products.json` y `coupons.json`.
-5. Reemplaza esos archivos en `assets/data/` dentro de GitHub.
-6. Haz commit y Cloudflare Pages publicará la nueva versión.
+1. Reemplaza `REPLACE_WITH_YOUR_D1_DATABASE_ID` en `wrangler.jsonc`
+2. Cambia el número de WhatsApp en `assets/js/app.js`
+3. Si usarás seguridad, define `ADMIN_TOKEN` en Cloudflare Pages
 
-## Importante
+## Configuración rápida
 
-- La tienda pública **no enlaza** al panel de gestión.
-- El panel administra **rutas y metadatos** de imagen, no sube archivos al servidor.
-- Los cambios del panel se guardan en `localStorage` hasta que exportes los JSON.
-- Si cambias el número de WhatsApp, edita esta línea en `assets/js/app.js`:
-
-```js
-const WHATSAPP_NUMBER = '51999999999';
+```bash
+npm install
+npx wrangler d1 migrations apply matria --remote
+npx wrangler d1 execute matria --remote --file=./migrations/0002_seed.sql
 ```
 
-## Despliegue en Cloudflare Pages
+## Deploy recomendado
 
-- Build command: dejar vacío
-- Output directory: `/`
-- Framework preset: `None`
+1. Sube todo este proyecto a GitHub
+2. Conecta el repo a Cloudflare Pages
+3. En tu proyecto Pages agrega el binding D1 con nombre `DB`
+4. Redeploya
+5. Prueba estas rutas:
+   - `/api/health`
+   - `/api/store`
+   - `/admin.html`
 
-Como es un proyecto estático, GitHub + Cloudflare Pages funciona muy bien para este caso.
+## Nota importante
+
+La fuente de verdad ya es **D1**. Los archivos JSON son solo respaldo y punto de partida.

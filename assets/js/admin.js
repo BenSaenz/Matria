@@ -1,6 +1,9 @@
 const COLLECTIONS_STORAGE_KEY = 'matria-collections-v3';
 const PRODUCTS_STORAGE_KEY = 'matria-products-v3';
 const COUPONS_STORAGE_KEY = 'matria-coupons-v3';
+const STORE_SYNC_KEY = 'matria-sync-revision-v1';
+const API_BASE = window.MATRIA_API_BASE || document.querySelector('meta[name="matria-api-base"]')?.content || '/api';
+const ADMIN_TOKEN = window.MATRIA_ADMIN_TOKEN || localStorage.getItem('matria-admin-token') || '';
 
 const adminState = {
   collections: [],
@@ -13,7 +16,9 @@ const adminState = {
     collections: [],
     products: [],
     coupons: []
-  }
+  },
+  dataSource: 'static',
+  revision: null
 };
 
 document.addEventListener('DOMContentLoaded', initAdmin);
@@ -52,6 +57,23 @@ function setupNav() {
 }
 
 async function loadAdminData() {
+  setSyncStatus('loading', 'Conectando con la API de sincronización…');
+
+  const remotePayload = await fetchRemoteStore();
+  if (remotePayload) {
+    adminState.dataSource = 'd1';
+    adminState.revision = remotePayload.revision || null;
+    adminState.defaults.collections = normalizeCollections(remotePayload.collections || []);
+    adminState.defaults.products = normalizeProducts(remotePayload.products || []);
+    adminState.defaults.coupons = normalizeCoupons(remotePayload.coupons || []);
+    adminState.collections = normalizeCollections(remotePayload.collections || []);
+    adminState.products = normalizeProducts(remotePayload.products || []);
+    adminState.coupons = normalizeCoupons(remotePayload.coupons || []);
+    cacheAdminData();
+    setSyncStatus('success', 'Sincronizado con Cloudflare D1. Los cambios se publican automáticamente.');
+    return;
+  }
+
   const [collectionsDefault, productsDefault, couponsDefault] = await Promise.all([
     fetchJson('assets/data/collections.json', []),
     fetchJson('assets/data/products.json', []),
@@ -65,6 +87,70 @@ async function loadAdminData() {
   adminState.collections = normalizeCollections(readStorage(COLLECTIONS_STORAGE_KEY, null) || collectionsDefault);
   adminState.products = normalizeProducts(readStorage(PRODUCTS_STORAGE_KEY, null) || productsDefault);
   adminState.coupons = normalizeCoupons(readStorage(COUPONS_STORAGE_KEY, null) || couponsDefault);
+  setSyncStatus('error', 'No se pudo conectar con la API. Se cargó la copia local de respaldo.');
+}
+
+async function fetchRemoteStore() {
+  const payload = await fetchJson(`${API_BASE.replace(/\/$/, '')}/store`, null);
+  if (!payload || !Array.isArray(payload.collections) || !Array.isArray(payload.products) || !Array.isArray(payload.coupons)) {
+    return null;
+  }
+  return payload;
+}
+
+function cacheAdminData() {
+  writeStorage(COLLECTIONS_STORAGE_KEY, adminState.collections);
+  writeStorage(PRODUCTS_STORAGE_KEY, adminState.products);
+  writeStorage(COUPONS_STORAGE_KEY, adminState.coupons);
+}
+
+function setSyncStatus(type, message) {
+  const box = document.getElementById('syncStatusBox');
+  if (!box) return;
+  box.className = `system-note compact-note ${type}`;
+  box.textContent = message;
+}
+
+function broadcastSync(resource, revision = null) {
+  const nextRevision = revision || {
+    resource,
+    id: crypto.randomUUID ? crypto.randomUUID() : `rev-${Date.now()}`,
+    at: new Date().toISOString()
+  };
+  adminState.revision = nextRevision;
+  writeStorage(STORE_SYNC_KEY, nextRevision);
+}
+
+async function saveRemoteSection(section, data) {
+  const response = await fetch(`${API_BASE.replace(/\/$/, '')}/${section}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...(ADMIN_TOKEN ? { 'X-Admin-Token': ADMIN_TOKEN } : {})
+    },
+    body: JSON.stringify(data)
+  });
+
+  if (!response.ok) {
+    const message = await safeReadError(response);
+    throw new Error(message || 'No se pudo guardar la información en Cloudflare D1.');
+  }
+
+  const payload = await response.json();
+  cacheAdminData();
+  broadcastSync(section, payload?.revision || null);
+  setSyncStatus('success', `Cambios guardados automáticamente en D1 (${section}).`);
+  return payload;
+}
+
+async function safeReadError(response) {
+  try {
+    const data = await response.json();
+    return data?.error || data?.message || '';
+  } catch {
+    return response.statusText || '';
+  }
 }
 
 function bindAdminEvents() {
@@ -248,7 +334,7 @@ function populateCollectionSelect() {
   select.innerHTML = activeCollections.map(collection => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.code ? `${collection.code}. ${collection.name}` : collection.name)}</option>`).join('');
 }
 
-function handleCollectionSubmit(event) {
+async function handleCollectionSubmit(event) {
   event.preventDefault();
   const collection = collectCollectionFromForm();
   if (!collection) return;
@@ -261,10 +347,14 @@ function handleCollectionSubmit(event) {
   }
 
   adminState.collections.sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || a.name.localeCompare(b.name, 'es'));
-  persistCollections();
-  renderAllAdmin();
-  resetCollectionForm();
-  alert('Colección guardada correctamente.');
+  try {
+    await persistCollections();
+    renderAllAdmin();
+    resetCollectionForm();
+    alert('Colección guardada correctamente.');
+  } catch (error) {
+    alert(error.message || 'No se pudo guardar la colección.');
+  }
 }
 
 function collectCollectionFromForm() {
@@ -350,12 +440,12 @@ function resetCollectionForm() {
   addMediaField(mediaList, { type: 'image', src: '', alt: '', title: '', caption: '' });
 }
 
-function deleteEditingCollection() {
+async function deleteEditingCollection() {
   if (!adminState.editingCollectionId) return;
-  deleteCollection(adminState.editingCollectionId);
+  await deleteCollection(adminState.editingCollectionId);
 }
 
-function deleteCollection(collectionId) {
+async function deleteCollection(collectionId) {
   const collection = adminState.collections.find(item => item.id === collectionId);
   if (!collection) return;
 
@@ -367,12 +457,16 @@ function deleteCollection(collectionId) {
 
   if (!confirm(`¿Eliminar la colección "${collection.name}"?`)) return;
   adminState.collections = adminState.collections.filter(item => item.id !== collectionId);
-  persistCollections();
-  renderAllAdmin();
-  if (adminState.editingCollectionId === collectionId) resetCollectionForm();
+  try {
+    await persistCollections();
+    renderAllAdmin();
+    if (adminState.editingCollectionId === collectionId) resetCollectionForm();
+  } catch (error) {
+    alert(error.message || 'No se pudo eliminar la colección.');
+  }
 }
 
-function handleProductSubmit(event) {
+async function handleProductSubmit(event) {
   event.preventDefault();
   const product = collectProductFromForm();
   if (!product) return;
@@ -384,10 +478,14 @@ function handleProductSubmit(event) {
     adminState.products.unshift(product);
   }
 
-  persistProducts();
-  renderAllAdmin();
-  resetProductForm();
-  alert('Producto guardado correctamente.');
+  try {
+    await persistProducts();
+    renderAllAdmin();
+    resetProductForm();
+    alert('Producto guardado correctamente.');
+  } catch (error) {
+    alert(error.message || 'No se pudo guardar el producto.');
+  }
 }
 
 function collectProductFromForm() {
@@ -493,22 +591,26 @@ function resetProductForm() {
   syncDiscountPanelState();
 }
 
-function deleteEditingProduct() {
+async function deleteEditingProduct() {
   if (!adminState.editingProductId) return;
-  deleteProduct(adminState.editingProductId);
+  await deleteProduct(adminState.editingProductId);
 }
 
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
   const product = adminState.products.find(item => item.id === productId);
   if (!product) return;
   if (!confirm(`¿Eliminar el producto "${product.name}"?`)) return;
   adminState.products = adminState.products.filter(item => item.id !== productId);
-  persistProducts();
-  renderAllAdmin();
-  if (adminState.editingProductId === productId) resetProductForm();
+  try {
+    await persistProducts();
+    renderAllAdmin();
+    if (adminState.editingProductId === productId) resetProductForm();
+  } catch (error) {
+    alert(error.message || 'No se pudo eliminar el producto.');
+  }
 }
 
-function handleCouponSubmit(event) {
+async function handleCouponSubmit(event) {
   event.preventDefault();
   const coupon = collectCouponFromForm();
   if (!coupon) return;
@@ -520,10 +622,14 @@ function handleCouponSubmit(event) {
     adminState.coupons.unshift(coupon);
   }
 
-  persistCoupons();
-  renderAllAdmin();
-  resetCouponForm();
-  alert('Cupón guardado correctamente.');
+  try {
+    await persistCoupons();
+    renderAllAdmin();
+    resetCouponForm();
+    alert('Cupón guardado correctamente.');
+  } catch (error) {
+    alert(error.message || 'No se pudo guardar el cupón.');
+  }
 }
 
 function collectCouponFromForm() {
@@ -577,19 +683,23 @@ function resetCouponForm() {
   document.getElementById('deleteCouponButton').disabled = true;
 }
 
-function deleteEditingCoupon() {
+async function deleteEditingCoupon() {
   if (!adminState.editingCouponId) return;
-  deleteCoupon(adminState.editingCouponId);
+  await deleteCoupon(adminState.editingCouponId);
 }
 
-function deleteCoupon(couponId) {
+async function deleteCoupon(couponId) {
   const coupon = adminState.coupons.find(item => item.id === couponId);
   if (!coupon) return;
   if (!confirm(`¿Eliminar el cupón "${coupon.code}"?`)) return;
   adminState.coupons = adminState.coupons.filter(item => item.id !== couponId);
-  persistCoupons();
-  renderAllAdmin();
-  if (adminState.editingCouponId === couponId) resetCouponForm();
+  try {
+    await persistCoupons();
+    renderAllAdmin();
+    if (adminState.editingCouponId === couponId) resetCouponForm();
+  } catch (error) {
+    alert(error.message || 'No se pudo eliminar el cupón.');
+  }
 }
 
 function addTextField(list, inputClass, placeholder, value = '') {
@@ -674,64 +784,71 @@ function exportJson(filename, data) {
   URL.revokeObjectURL(url);
 }
 
-function importJsonFile(event, type) {
+async function importJsonFile(event, type) {
   const file = event.target.files?.[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const data = JSON.parse(reader.result);
       if (type === 'collections') {
         adminState.collections = normalizeCollections(data);
-        persistCollections();
+        await persistCollections();
         resetCollectionForm();
       } else if (type === 'products') {
         adminState.products = normalizeProducts(data);
-        persistProducts();
+        await persistProducts();
         resetProductForm();
       } else {
         adminState.coupons = normalizeCoupons(data);
-        persistCoupons();
+        await persistCoupons();
         resetCouponForm();
       }
       renderAllAdmin();
       alert(`${type === 'collections' ? 'Colecciones' : type === 'products' ? 'Productos' : 'Cupones'} importados correctamente.`);
       event.target.value = '';
-    } catch {
-      alert('El archivo JSON no tiene un formato válido.');
+    } catch (error) {
+      alert(error?.message || 'El archivo JSON no tiene un formato válido.');
     }
   };
   reader.readAsText(file);
 }
 
-function resetAllData() {
-  if (!confirm('Se restaurarán los datos base del proyecto y se limpiarán los cambios locales. ¿Deseas continuar?')) return;
+async function resetAllData() {
+  if (!confirm('Se restaurarán los datos base del proyecto y se reemplazarán los datos publicados en D1. ¿Deseas continuar?')) return;
   localStorage.removeItem(COLLECTIONS_STORAGE_KEY);
   localStorage.removeItem(PRODUCTS_STORAGE_KEY);
   localStorage.removeItem(COUPONS_STORAGE_KEY);
   adminState.collections = [...adminState.defaults.collections];
   adminState.products = [...adminState.defaults.products];
   adminState.coupons = [...adminState.defaults.coupons];
-  persistCollections();
-  persistProducts();
-  persistCoupons();
-  resetCollectionForm();
-  resetProductForm();
-  resetCouponForm();
-  renderAllAdmin();
+  try {
+    await persistCollections();
+    await persistProducts();
+    await persistCoupons();
+    resetCollectionForm();
+    resetProductForm();
+    resetCouponForm();
+    renderAllAdmin();
+  } catch (error) {
+    alert(error.message || 'No se pudo restaurar la data base.');
+  }
 }
 
-function persistCollections() {
-  localStorage.setItem(COLLECTIONS_STORAGE_KEY, JSON.stringify(adminState.collections));
+async function persistCollections() {
+  writeStorage(COLLECTIONS_STORAGE_KEY, adminState.collections);
+  return saveRemoteSection('collections', adminState.collections);
 }
 
-function persistProducts() {
-  localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(adminState.products));
+async function persistProducts() {
+  writeStorage(PRODUCTS_STORAGE_KEY, adminState.products);
+  return saveRemoteSection('products', adminState.products);
 }
 
-function persistCoupons() {
-  localStorage.setItem(COUPONS_STORAGE_KEY, JSON.stringify(adminState.coupons));
+async function persistCoupons() {
+  writeStorage(COUPONS_STORAGE_KEY, adminState.coupons);
+  return saveRemoteSection('coupons', adminState.coupons);
 }
 
 function normalizeCollections(list) {
@@ -841,6 +958,14 @@ function readStorage(key, fallback) {
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore storage write failures
   }
 }
 

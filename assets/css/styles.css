@@ -879,3 +879,28 @@ nav.primary-nav { display: flex; justify-content: center; }
   }
   .field-span-2 { grid-column: auto; }
 }
+
+
+.story-card-single {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.compact-note {
+  margin-top: 1rem;
+}
+
+.system-note.success {
+  border-color: rgba(63, 106, 74, 0.24);
+  background: rgba(166, 177, 159, 0.14);
+}
+
+.system-note.error {
+  border-color: rgba(185, 120, 96, 0.24);
+  background: rgba(185, 120, 96, 0.08);
+}
+
+.system-note.loading {
+  border-color: rgba(41, 37, 31, 0.14);
+  background: rgba(255, 255, 255, 0.5);
+}

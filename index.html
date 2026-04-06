@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <meta name="matria-api-base" content="/api" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body data-page="storefront">
@@ -142,7 +143,7 @@
           <span class="eyebrow">Colecciones</span>
           <h2 id="colecciones-title">Universos sensoriales para distintos estados del día</h2>
           <p>
-            Cada colección se administra por separado y organiza productos, relato, imagen principal y orden visual dentro de la home. El bloque se alimenta desde <code>collections.json</code>.
+            Cada colección se administra por separado y organiza productos, relato, imagen principal y orden visual dentro de la home. El bloque se alimenta automáticamente desde Cloudflare D1.
           </p>
         </div>
         <div class="collections-grid" id="collectionsGrid" aria-live="polite"></div>
@@ -202,31 +203,22 @@
 
     <section class="section" id="marca" aria-labelledby="marca-title">
       <div class="container">
-        <div class="story-layout reveal">
-          <div class="story-visual" aria-hidden="true">
-            <div class="story-quote">
-              <span class="eyebrow">Copy sugerido</span>
-              <p>“MATRIA nace para recordarte que la calma también puede tener forma, aroma y textura.”</p>
-            </div>
+        <article class="story-card story-card-single reveal">
+          <span class="eyebrow">Sobre la marca</span>
+          <h2 id="marca-title">Una pausa diseñada con intención</h2>
+          <p>
+            MATRIA propone un universo sensible donde cada vela y cada sal orgánica se convierten en una invitación a volver a ti. La marca habla desde la calidez, la espiritualidad suave y la sofisticación serena.
+          </p>
+          <ul class="story-points">
+            <li><span>01</span><span><strong>Propósito:</strong> vender, captar leads y posicionar una marca premium ligada al bienestar cotidiano.</span></li>
+            <li><span>02</span><span><strong>Tono de voz:</strong> cálido, espiritual, cercano y editorial.</span></li>
+            <li><span>03</span><span><strong>Experiencia:</strong> mobile-first, ligera, estética y preparada para crecer.</span></li>
+          </ul>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#contacto">Solicitar catálogo por WhatsApp</a>
+            <a class="btn btn-ghost" href="#newsletter">Unirme a la lista</a>
           </div>
-
-          <article class="story-card">
-            <span class="eyebrow">Sobre la marca</span>
-            <h2 id="marca-title">Una pausa diseñada con intención</h2>
-            <p>
-              MATRIA propone un universo sensible donde cada vela y cada sal orgánica se convierten en una invitación a volver a ti. La marca habla desde la calidez, la espiritualidad suave y la sofisticación serena.
-            </p>
-            <ul class="story-points">
-              <li><span>01</span><span><strong>Propósito:</strong> vender, captar leads y posicionar una marca premium ligada al bienestar cotidiano.</span></li>
-              <li><span>02</span><span><strong>Tono de voz:</strong> cálido, espiritual, cercano y editorial.</span></li>
-              <li><span>03</span><span><strong>Experiencia:</strong> mobile-first, ligera, estética y preparada para crecer.</span></li>
-            </ul>
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="#contacto">Solicitar catálogo por WhatsApp</a>
-              <a class="btn btn-ghost" href="#newsletter">Unirme a la lista</a>
-            </div>
-          </article>
-        </div>
+        </article>
       </div>
     </section>
 
@@ -336,7 +328,6 @@
       </div>
       <div class="footer-bottom">
         <span>© <span id="year"></span> MATRIA. Todos los derechos reservados.</span>
-        <span>HTML listo para GitHub + Cloudflare Pages</span>
       </div>
     </div>
   </footer>

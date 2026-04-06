@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <meta name="matria-api-base" content="/api" />
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body data-page="admin">
@@ -53,8 +54,9 @@
           <span class="eyebrow">Gestión local HTML</span>
           <h1 class="admin-title">Colecciones, productos y cupones</h1>
           <p>
-            Este panel funciona en GitHub + Cloudflare Pages sin backend. Los cambios se guardan en tu navegador mediante localStorage y luego se exportan como JSON para reemplazar los archivos de <strong>assets/data/</strong> en tu repositorio.
+            Este panel sincroniza colecciones, productos y cupones automáticamente con Cloudflare D1 mediante Pages Functions. La tienda pública se refresca sola cuando detecta cambios desde otra pestaña.
           </p>
+          <div class="system-note compact-note" id="syncStatusBox">Conectando con la API de sincronización…</div>
         </div>
 
         <div class="system-note reveal">
@@ -400,8 +402,8 @@
         <div class="admin-tools-grid reveal">
           <article class="admin-card">
             <span class="eyebrow">Exportar</span>
-            <h2>JSON listo para GitHub</h2>
-            <p>Exporta los cambios actuales del navegador y reemplaza los archivos dentro de <strong>assets/data/</strong> en tu repositorio para publicarlos en Cloudflare Pages.</p>
+            <h2>Respaldo JSON</h2>
+            <p>Exporta una copia de seguridad de colecciones, productos y cupones. La publicación principal ocurre automáticamente en Cloudflare D1.</p>
             <div class="editor-actions vertical-mobile">
               <button class="btn btn-primary" type="button" id="exportCollectionsButton">Exportar collections.json</button>
               <button class="btn btn-secondary" type="button" id="exportProductsButton">Exportar products.json</button>

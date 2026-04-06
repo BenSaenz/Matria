@@ -1,0 +1,14 @@
+{
+  "name": "matria-site",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler pages dev . --d1 DB=REPLACE_WITH_YOUR_D1_DATABASE_ID",
+    "deploy": "wrangler pages deploy .",
+    "d1:migrations": "wrangler d1 migrations apply matria --remote",
+    "d1:seed": "wrangler d1 execute matria --remote --file=./migrations/0002_seed.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.10.0"
+  }
+}

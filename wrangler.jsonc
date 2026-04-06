@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "matria-site",
+  "compatibility_date": "2025-02-04",
+  "pages_build_output_dir": ".",
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "matria",
+      "database_id": "684a9565-343d-4bb6-88ca-629164eaaad8"
+    }
+  ]
+}
