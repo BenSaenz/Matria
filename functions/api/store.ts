@@ -1,10 +1,18 @@
-import type { Env } from '../_shared/utils';
-import { json, optionsHandler } from '../_shared/utils';
-import { getStorePayload } from '../_shared/store';
+import type { Env, Section } from './utils';
+import { safeParseJson, touchRevision, readRevision } from './utils';
 
-export const onRequestOptions: PagesFunction<Env> = async (context) => optionsHandler(context.request);
+export async function getStorePayload(env: Env) {
+  const [collectionsResult, productsResult, couponsResult, revision] = await Promise.all([
+    env.DB.prepare(`SELECT * FROM collections ORDER BY sort_order ASC, name ASC`).all<CollectionRow>(),
+    env.DB.prepare(`SELECT * FROM products ORDER BY sort_order ASC, name ASC`).all<ProductRow>(),
+    env.DB.prepare(`SELECT * FROM coupons ORDER BY code ASC`).all<CouponRow>(),
+    readRevision(env)
+  ]);
 
-export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const payload = await getStorePayload(context.env);
-  return json(payload, 200, context.request);
-};
+  return {
+    collections: (collectionsResult.results || []).map(mapCollectionRow),
+    products: (productsResult.results || []).map(mapProductRow),
+    coupons: (couponsResult.results || []).map(mapCouponRow),
+    revision
+  };
+}
