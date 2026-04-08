@@ -1,53 +1,207 @@
-import type { Env, Section } from './utils';
-import { safeParseJson, touchRevision } from './utils';
+type Env = {
+  DB: D1Database;
+};
 
-interface CollectionRow {
+type MediaItem = {
+  type: 'image' | 'video';
+  src: string;
+  alt?: string;
+  title?: string;
+  caption?: string;
+  sortOrder?: number;
+};
+
+type SectionItem = {
+  title?: string;
+  body?: string;
+};
+
+type CollectionRow = {
   id: string;
-  code: string | null;
-  name: string;
-  title: string | null;
-  tagline: string | null;
-  story: string | null;
-  pack_name: string | null;
-  pack_story: string | null;
-  cta_label: string | null;
-  featured: number;
-  show_on_home: number;
-  sort_order: number;
-  active: number;
-  media_json: string | null;
+  slug?: string | null;
+  name?: string | null;
+  concept?: string | null;
+  description?: string | null;
+  image_src?: string | null;
+  image_alt?: string | null;
+  image_title?: string | null;
+  image_caption?: string | null;
+  sort_order?: number | string | null;
+  is_active?: number | string | boolean | null;
+};
+
+type ProductRow = {
+  id: string;
+  collection_id?: string | null;
+  name?: string | null;
+  slug?: string | null;
+  category?: string | null;
+  format?: string | null;
+  price?: number | string | null;
+  badge?: string | null;
+  technical_blend?: string | null;
+  short_description?: string | null;
+  description?: string | null;
+  discount_type?: string | null;
+  discount_value?: number | string | null;
+  is_active?: number | string | boolean | null;
+  sort_order?: number | string | null;
+  media_json?: string | null;
+  sections_json?: string | null;
+};
+
+type CouponRow = {
+  id?: string | null;
+  code?: string | null;
+  discount_type?: string | null;
+  discount_value?: number | string | null;
+  is_active?: number | string | boolean | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  usage_limit?: number | string | null;
+};
+
+function safeParseJson<T>(value: unknown, fallback: T): T {
+  if (typeof value !== 'string' || !value.trim()) return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
-interface ProductRow {
-  id: string;
-  collection_id: string | null;
-  name: string;
-  category: string;
-  format: string | null;
-  price: number;
-  badge: string | null;
-  technical_blend: string | null;
-  sales_speech: string | null;
-  short_description: string | null;
-  description: string | null;
-  descriptions_json: string | null;
-  features_json: string | null;
-  discount_enabled: number;
-  discount_type: string | null;
-  discount_value: number | null;
-  media_json: string | null;
-  sort_order: number;
-  active: number;
+function toNumber(value: unknown, fallback = 0): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-interface CouponRow {
-  id: string;
-  code: string;
-  type: string;
-  value: number;
-  min_order: number;
-  description: string | null;
-  active: number;
+function toBoolean(value: unknown, fallback = true): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'si', 'sí'].includes(normalized)) return true;
+    if (['0', 'false', 'no'].includes(normalized)) return false;
+  }
+  return fallback;
+}
+
+function toText(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function parseMedia(value: unknown): MediaItem[] {
+  const items = safeParseJson<unknown[]>(value, []);
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+
+      const raw = item as Record<string, unknown>;
+      const src = toText(raw.src);
+
+      if (!src) return null;
+
+      const rawType = toText(raw.type, 'image');
+      const type: 'image' | 'video' = rawType === 'video' ? 'video' : 'image';
+
+      return {
+        type,
+        src,
+        alt: toText(raw.alt),
+        title: toText(raw.title),
+        caption: toText(raw.caption),
+        sortOrder: toNumber(raw.sortOrder, 0)
+      };
+    })
+    .filter(Boolean) as MediaItem[];
+}
+
+function parseSections(value: unknown): SectionItem[] {
+  const items = safeParseJson<unknown[]>(value, []);
+  if (!Array.isArray(items)) return [];
+
+  return items
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+
+      const raw = item as Record<string, unknown>;
+      return {
+        title: toText(raw.title),
+        body: toText(raw.body)
+      };
+    })
+    .filter(Boolean) as SectionItem[];
+}
+
+function mapCollectionRow(row: CollectionRow) {
+  return {
+    id: row.id,
+    slug: row.slug || row.id,
+    name: row.name || '',
+    concept: row.concept || '',
+    description: row.description || '',
+    imageSrc: row.image_src || '',
+    imageAlt: row.image_alt || '',
+    imageTitle: row.image_title || '',
+    imageCaption: row.image_caption || '',
+    sortOrder: toNumber(row.sort_order, 0),
+    isActive: toBoolean(row.is_active, true)
+  };
+}
+
+function mapProductRow(row: ProductRow) {
+  return {
+    id: row.id,
+    slug: row.slug || row.id,
+    collectionId: row.collection_id || '',
+    name: row.name || '',
+    category: row.category || '',
+    format: row.format || '',
+    price: toNumber(row.price, 0),
+    badge: row.badge || '',
+    technicalBlend: row.technical_blend || '',
+    shortDescription: row.short_description || '',
+    description: row.description || '',
+    discountType: row.discount_type || '',
+    discountValue: toNumber(row.discount_value, 0),
+    isActive: toBoolean(row.is_active, true),
+    sortOrder: toNumber(row.sort_order, 0),
+    media: parseMedia(row.media_json),
+    sections: parseSections(row.sections_json)
+  };
+}
+
+function mapCouponRow(row: CouponRow) {
+  return {
+    id: row.id || row.code || '',
+    code: toText(row.code).toUpperCase(),
+    discountType: row.discount_type || '',
+    discountValue: toNumber(row.discount_value, 0),
+    isActive: toBoolean(row.is_active, true),
+    startsAt: row.starts_at || '',
+    endsAt: row.ends_at || '',
+    usageLimit:
+      row.usage_limit === null || row.usage_limit === undefined || row.usage_limit === ''
+        ? null
+        : toNumber(row.usage_limit, 0)
+  };
+}
+
+async function readRevision(env: Env): Promise<number> {
+  try {
+    const row = await env.DB.prepare(
+      `SELECT value FROM meta WHERE key = 'revision' LIMIT 1`
+    ).first<{ value?: string | number | null }>();
+
+    if (!row?.value) return Date.now();
+
+    const revision = Number(row.value);
+    return Number.isFinite(revision) ? revision : Date.now();
+  } catch {
+    return Date.now();
+  }
 }
 
 export async function getStorePayload(env: Env) {
@@ -55,7 +209,7 @@ export async function getStorePayload(env: Env) {
     env.DB.prepare(`SELECT * FROM collections ORDER BY sort_order ASC, name ASC`).all<CollectionRow>(),
     env.DB.prepare(`SELECT * FROM products ORDER BY sort_order ASC, name ASC`).all<ProductRow>(),
     env.DB.prepare(`SELECT * FROM coupons ORDER BY code ASC`).all<CouponRow>(),
-    (await import('./utils')).then(m => m.readRevision(env))
+    readRevision(env)
   ]);
 
   return {
@@ -64,190 +218,4 @@ export async function getStorePayload(env: Env) {
     coupons: (couponsResult.results || []).map(mapCouponRow),
     revision
   };
-}
-
-export async function replaceSection(env: Env, section: Section, payload: unknown[]) {
-  switch (section) {
-    case 'collections':
-      await replaceCollections(env, payload as any[]);
-      break;
-    case 'products':
-      await replaceProducts(env, payload as any[]);
-      break;
-    case 'coupons':
-      await replaceCoupons(env, payload as any[]);
-      break;
-    default:
-      throw new Error('Sección no soportada.');
-  }
-
-  return touchRevision(env, section);
-}
-
-async function replaceCollections(env: Env, collections: any[]) {
-  const statements: D1PreparedStatement[] = [
-    env.DB.prepare(`DELETE FROM collections`)
-  ];
-
-  for (const item of collections) {
-    statements.push(
-      env.DB.prepare(`
-        INSERT INTO collections (
-          id, code, name, title, tagline, story, pack_name, pack_story, cta_label,
-          featured, show_on_home, sort_order, active, media_json, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(
-        String(item.id || ''),
-        nullable(item.code),
-        String(item.name || 'Colección'),
-        nullable(item.title || item.name),
-        nullable(item.tagline),
-        nullable(item.story),
-        nullable(item.packName),
-        nullable(item.packStory),
-        nullable(item.ctaLabel),
-        boolToInt(item.featured !== false),
-        boolToInt(item.showOnHome !== false),
-        Number(item.sortOrder || 0),
-        boolToInt(item.active !== false),
-        JSON.stringify(Array.isArray(item.media) ? item.media : [])
-      )
-    );
-  }
-
-  await env.DB.batch(statements);
-}
-
-async function replaceProducts(env: Env, products: any[]) {
-  const statements: D1PreparedStatement[] = [
-    env.DB.prepare(`DELETE FROM products`)
-  ];
-
-  for (const item of products) {
-    const discount = item.discount || {};
-    statements.push(
-      env.DB.prepare(`
-        INSERT INTO products (
-          id, collection_id, name, category, format, price, badge,
-          technical_blend, sales_speech, short_description, description,
-          descriptions_json, features_json, discount_enabled, discount_type,
-          discount_value, media_json, sort_order, active, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(
-        String(item.id || ''),
-        nullable(item.collectionId),
-        String(item.name || 'Producto'),
-        String(item.category || 'General'),
-        nullable(item.format || 'ritual'),
-        Number(item.price || 0),
-        nullable(item.badge),
-        nullable(item.technicalBlend),
-        nullable(item.salesSpeech),
-        nullable(item.shortDescription),
-        nullable(item.description),
-        JSON.stringify(Array.isArray(item.descriptions) ? item.descriptions : []),
-        JSON.stringify(Array.isArray(item.features) ? item.features : []),
-        boolToInt(Boolean(discount.enabled)),
-        nullable(discount.type || 'percent'),
-        Number(discount.value || 0),
-        JSON.stringify(Array.isArray(item.media) ? item.media : []),
-        Number(item.sortOrder || 0),
-        boolToInt(item.active !== false)
-      )
-    );
-  }
-
-  await env.DB.batch(statements);
-}
-
-async function replaceCoupons(env: Env, coupons: any[]) {
-  const statements: D1PreparedStatement[] = [
-    env.DB.prepare(`DELETE FROM coupons`)
-  ];
-
-  for (const item of coupons) {
-    statements.push(
-      env.DB.prepare(`
-        INSERT INTO coupons (
-          id, code, type, value, min_order, description, active, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(
-        String(item.id || ''),
-        String(item.code || '').toUpperCase(),
-        String(item.type === 'fixed' ? 'fixed' : 'percent'),
-        Number(item.value || 0),
-        Number(item.minOrder || 0),
-        nullable(item.description),
-        boolToInt(item.active !== false)
-      )
-    );
-  }
-
-  await env.DB.batch(statements);
-}
-
-function mapCollectionRow(row: CollectionRow) {
-  return {
-    id: row.id,
-    code: row.code || '',
-    name: row.name,
-    title: row.title || row.name,
-    tagline: row.tagline || '',
-    story: row.story || '',
-    packName: row.pack_name || '',
-    packStory: row.pack_story || '',
-    ctaLabel: row.cta_label || 'Ver colección',
-    featured: Boolean(row.featured),
-    showOnHome: Boolean(row.show_on_home),
-    sortOrder: Number(row.sort_order || 0),
-    active: Boolean(row.active),
-    media: safeParseJson(row.media_json, [])
-  };
-}
-
-function mapProductRow(row: ProductRow) {
-  return {
-    id: row.id,
-    collectionId: row.collection_id || '',
-    name: row.name,
-    category: row.category,
-    format: row.format || 'ritual',
-    price: Number(row.price || 0),
-    badge: row.badge || '',
-    technicalBlend: row.technical_blend || '',
-    salesSpeech: row.sales_speech || '',
-    shortDescription: row.short_description || '',
-    description: row.description || '',
-    descriptions: safeParseJson(row.descriptions_json, []),
-    features: safeParseJson(row.features_json, []),
-    discount: {
-      enabled: Boolean(row.discount_enabled),
-      type: row.discount_type === 'fixed' ? 'fixed' : 'percent',
-      value: Number(row.discount_value || 0)
-    },
-    media: safeParseJson(row.media_json, []),
-    sortOrder: Number(row.sort_order || 0),
-    active: Boolean(row.active)
-  };
-}
-
-function mapCouponRow(row: CouponRow) {
-  return {
-    id: row.id,
-    code: row.code,
-    type: row.type === 'fixed' ? 'fixed' : 'percent',
-    value: Number(row.value || 0),
-    minOrder: Number(row.min_order || 0),
-    description: row.description || '',
-    active: Boolean(row.active)
-  };
-}
-
-function boolToInt(value: boolean) {
-  return value ? 1 : 0;
-}
-
-function nullable(value: unknown) {
-  const text = value == null ? '' : String(value).trim();
-  return text ? text : null;
 }
