@@ -1,11 +1,9 @@
-import type { Env } from '../_shared/utils';
+import { getStorePayload } from '../_shared/store';
 
-export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const coupons = await context.env.DB
-    .prepare('SELECT * FROM coupons LIMIT 5')
-    .all();
+export const onRequestGet: PagesFunction = async (context) => {
+  const payload = await getStorePayload(context.env as any);
 
-  return new Response(JSON.stringify(coupons), {
+  return new Response(JSON.stringify(payload), {
     headers: {
       'content-type': 'application/json; charset=utf-8'
     }
