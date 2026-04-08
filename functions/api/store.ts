@@ -1,11 +1,11 @@
+import type { Env } from '../_shared/utils';
+import { json, optionsHandler } from '../_shared/utils';
 import { getStorePayload } from '../_shared/store';
 
-export const onRequestGet: PagesFunction = async (context) => {
-  const payload = await getStorePayload(context.env as any);
+export const onRequestOptions: PagesFunction<Env> = async (context) =>
+  optionsHandler(context.request);
 
-  return new Response(JSON.stringify(payload), {
-    headers: {
-      'content-type': 'application/json; charset=utf-8'
-    }
-  });
+export const onRequestGet: PagesFunction<Env> = async (context) => {
+  const payload = await getStorePayload(context.env);
+  return json(payload, 200, context.request);
 };
