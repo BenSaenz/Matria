@@ -3,7 +3,7 @@ export interface Env {
   ADMIN_TOKEN?: string;
 }
 
-export type Section = 'collections' | 'products' | 'coupons';
+export type Section = 'collections' | 'products' | 'coupons' | 'clientPhotos' | 'clientComments';
 
 export function json(data: unknown, status = 200, request?: Request): Response {
   return new Response(JSON.stringify(data, null, 2), {

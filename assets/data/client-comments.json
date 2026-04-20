@@ -1,0 +1,32 @@
+[
+  {
+    "id": "comment-mariana",
+    "author": "Mariana R.",
+    "role": "Clienta frecuente",
+    "quote": "La presentación es preciosa y el aroma realmente transforma el ambiente. Se siente como un regalo para una misma.",
+    "rating": 5,
+    "sortOrder": 1,
+    "active": true,
+    "linkedPhotoId": "cliente-maria-ritual"
+  },
+  {
+    "id": "comment-camila",
+    "author": "Camila V.",
+    "role": "Compró para gifting",
+    "quote": "Compré un set para regalar y fue perfecto. La estética es delicada, sofisticada y muy distinta a lo masivo.",
+    "rating": 5,
+    "sortOrder": 2,
+    "active": true,
+    "linkedPhotoId": "cliente-camila-ritual"
+  },
+  {
+    "id": "comment-lucia",
+    "author": "Lucía P.",
+    "role": "Nueva clienta",
+    "quote": "Me encantó la experiencia de compra y lo fácil que fue cerrar el pedido por WhatsApp. Todo se sintió cercano y cuidado.",
+    "rating": 5,
+    "sortOrder": 3,
+    "active": true,
+    "linkedPhotoId": "cliente-lucia-ritual"
+  }
+]

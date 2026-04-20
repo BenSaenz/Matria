@@ -30,6 +30,7 @@
           <li><a href="#colecciones-admin">Colecciones</a></li>
           <li><a href="#productos">Productos</a></li>
           <li><a href="#cupones">Cupones</a></li>
+          <li><a href="#clientes">Comentarios clientes</a></li>
           <li><a href="#herramientas">Herramientas</a></li>
           <li><a href="index.html">Ver tienda</a></li>
         </ul>
@@ -52,7 +53,7 @@
       <div class="container">
         <div class="section-header reveal">
           <span class="eyebrow">Gestión local HTML</span>
-          <h1 class="admin-title">Colecciones, productos y cupones</h1>
+          <h1 class="admin-title">Colecciones, productos, clientes y cupones</h1>
           <p>
             Este panel sincroniza colecciones, productos y cupones automáticamente con Cloudflare D1 mediante Pages Functions. La tienda pública se refresca sola cuando detecta cambios desde otra pestaña.
           </p>
@@ -176,7 +177,7 @@
           <article class="admin-card reveal sticky-card">
             <span class="eyebrow">Formulario de producto</span>
             <h2 id="productFormTitle">Crear producto</h2>
-            <p class="admin-note">Cada producto debe enlazarse a una colección. También puedes gestionar imágenes, descripciones, speech de venta, mezcla técnica y descuentos por porcentaje o valor.</p>
+            <p class="admin-note">Cada producto debe enlazarse a una colección. También puedes gestionar imágenes, descripciones, speech de venta, mezcla técnica, tamaño de presentación base, descuentos generales y presentaciones adicionales con precio, tamaño y descuento propio.</p>
 
             <form class="admin-form" id="productEditorForm">
               <input type="hidden" id="productId" />
@@ -209,10 +210,14 @@
                   </select>
                 </div>
               </div>
-              <div class="field two-cols">
+              <div class="field three-cols">
                 <div>
                   <label for="productPrice">Precio base</label>
                   <input id="productPrice" type="number" min="0" step="0.01" required placeholder="Ej. 79.90" />
+                </div>
+                <div>
+                  <label for="productPresentationSize">Tamaño de presentación base</label>
+                  <input id="productPresentationSize" placeholder="Ej. 220 g · frasco vidrio" />
                 </div>
                 <div>
                   <label for="productBadge">Etiqueta</label>
@@ -274,6 +279,15 @@
 
               <div class="admin-subsection">
                 <div class="subsection-head">
+                  <h3>Presentaciones adicionales</h3>
+                  <button class="btn btn-ghost btn-small" type="button" id="addPresentationButton">Agregar presentación</button>
+                </div>
+                <p class="assistive">Úsalo para tamaños, pesos, frascos u otras variantes. Cada presentación puede tener su propio precio y descuento individual. Si no activas un descuento aquí, se aplicará el descuento general del producto.</p>
+                <div id="presentationsList" class="dynamic-list"></div>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="subsection-head">
                   <h3>Imágenes y videos</h3>
                   <button class="btn btn-ghost btn-small" type="button" id="addMediaButton">Agregar medio</button>
                 </div>
@@ -292,7 +306,7 @@
             <div class="section-header compact-header">
               <span class="eyebrow">Resumen</span>
               <h2>Cuadro resumen de productos</h2>
-              <p>Revisa nombre, colección, precio, descuento activo y precio final. Desde aquí también puedes editar cualquier producto.</p>
+              <p>Revisa nombre, colección, precio base, presentaciones, descuento activo y precio final. Desde aquí también puedes editar cualquier producto.</p>
             </div>
 
             <div class="table-wrap">
@@ -302,9 +316,10 @@
                     <th>Producto</th>
                     <th>Colección</th>
                     <th>Producto</th>
-                    <th>Precio</th>
+                    <th>Precio base</th>
+                    <th>Presentaciones</th>
                     <th>Descuento</th>
-                    <th>Precio final</th>
+                    <th>Desde</th>
                     <th>Acción</th>
                   </tr>
                 </thead>
@@ -397,17 +412,177 @@
       </div>
     </section>
 
+
+    <section class="section" id="clientes">
+      <div class="container">
+        <div class="admin-layout-grid">
+          <article class="admin-card reveal sticky-card">
+            <span class="eyebrow">Comentarios de clientes</span>
+            <h2 id="clientPhotoFormTitle">Agregar foto al carrusel</h2>
+            <p class="admin-note">Carga fotos reales de clientes para mostrarlas en formato carrusel dentro de la sección de reseñas. Puedes usar una ruta pública o subir una imagen desde tu computadora.</p>
+
+            <form class="admin-form" id="clientPhotoEditorForm">
+              <input type="hidden" id="clientPhotoId" />
+              <div class="field two-cols">
+                <div>
+                  <label for="clientPhotoName">Nombre del cliente</label>
+                  <input id="clientPhotoName" required placeholder="Ej. María Fernanda" />
+                </div>
+                <div>
+                  <label for="clientPhotoRole">Contexto</label>
+                  <input id="clientPhotoRole" placeholder="Ej. Cliente MATRIA · regalo" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="clientPhotoQuote">Comentario corto</label>
+                <textarea id="clientPhotoQuote" placeholder="Texto breve que acompañe la foto en el carrusel"></textarea>
+              </div>
+              <div class="field">
+                <label for="clientPhotoCaption">Texto auxiliar</label>
+                <textarea id="clientPhotoCaption" placeholder="Mensaje breve debajo de la foto"></textarea>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="clientPhotoSrc">Ruta o URL de la foto</label>
+                  <input id="clientPhotoSrc" placeholder="assets/img/clientes/cliente-01.jpg o https://..." />
+                </div>
+                <div>
+                  <label for="clientPhotoFile">Subir foto</label>
+                  <input id="clientPhotoFile" type="file" accept="image/*" />
+                </div>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="clientPhotoAlt">Texto alt</label>
+                  <input id="clientPhotoAlt" placeholder="Descripción accesible de la imagen" />
+                </div>
+                <div>
+                  <label for="clientPhotoOrder">Orden visual</label>
+                  <input id="clientPhotoOrder" type="number" min="0" step="1" value="0" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="toggle-row"><input type="checkbox" id="clientPhotoActive" checked /> Mostrar en el carrusel</label>
+              </div>
+              <div class="editor-actions">
+                <button class="btn btn-primary" type="submit">Guardar foto</button>
+                <button class="btn btn-secondary" type="button" id="resetClientPhotoButton">Nueva foto</button>
+                <button class="btn btn-danger" type="button" id="deleteClientPhotoButton" disabled>Eliminar foto</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="admin-card reveal">
+            <div class="section-header compact-header">
+              <span class="eyebrow">Carrusel</span>
+              <h2>Fotos de clientes cargadas</h2>
+              <p>Estas fotos se mostrarán dentro de la sección de comentarios de clientes en formato carrusel.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Ruta</th>
+                    <th>Orden</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="clientPhotosTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+
+
+    <section class="section" id="comentarios-clientes">
+      <div class="container">
+        <div class="admin-layout-grid">
+          <article class="admin-card reveal sticky-card">
+            <span class="eyebrow">Reseñas y comentarios</span>
+            <h2 id="clientCommentFormTitle">Agregar comentario de cliente</h2>
+            <p class="admin-note">Administra los textos que aparecen en la sección de reseñas de la tienda. Puedes definir nombre, contexto, comentario, calificación y orden visual.</p>
+
+            <form class="admin-form" id="clientCommentEditorForm">
+              <input type="hidden" id="clientCommentId" />
+              <div class="field two-cols">
+                <div>
+                  <label for="clientCommentAuthor">Nombre del cliente</label>
+                  <input id="clientCommentAuthor" required placeholder="Ej. Mariana R." />
+                </div>
+                <div>
+                  <label for="clientCommentRole">Contexto</label>
+                  <input id="clientCommentRole" placeholder="Ej. Clienta frecuente" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="clientCommentQuote">Comentario</label>
+                <textarea id="clientCommentQuote" required placeholder="Escribe la reseña que se mostrará en la tienda"></textarea>
+              </div>
+              <div class="field two-cols">
+                <div>
+                  <label for="clientCommentRating">Calificación</label>
+                  <input id="clientCommentRating" type="number" min="1" max="5" step="1" value="5" />
+                </div>
+                <div>
+                  <label for="clientCommentOrder">Orden visual</label>
+                  <input id="clientCommentOrder" type="number" min="0" step="1" value="0" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="toggle-row"><input type="checkbox" id="clientCommentActive" checked /> Mostrar en la sección de reseñas</label>
+              </div>
+              <div class="editor-actions">
+                <button class="btn btn-primary" type="submit">Guardar comentario</button>
+                <button class="btn btn-secondary" type="button" id="resetClientCommentButton">Nuevo comentario</button>
+                <button class="btn btn-danger" type="button" id="deleteClientCommentButton" disabled>Eliminar comentario</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="admin-card reveal">
+            <div class="section-header compact-header">
+              <span class="eyebrow">Reseñas</span>
+              <h2>Comentarios cargados</h2>
+              <p>Estos comentarios se muestran como tarjetas de reseña en la home y complementan el carrusel de fotos de clientes.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Contexto</th>
+                    <th>Comentario</th>
+                    <th>Rating</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="clientCommentsTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="herramientas">
       <div class="container">
         <div class="admin-tools-grid reveal">
           <article class="admin-card">
             <span class="eyebrow">Exportar</span>
             <h2>Respaldo JSON</h2>
-            <p>Exporta una copia de seguridad de colecciones, productos y cupones. La publicación principal ocurre automáticamente en Cloudflare D1.</p>
+            <p>Exporta una copia de seguridad de colecciones, productos, comentarios, fotos de clientes y cupones. La publicación principal ocurre automáticamente en Cloudflare D1.</p>
             <div class="editor-actions vertical-mobile">
               <button class="btn btn-primary" type="button" id="exportCollectionsButton">Exportar collections.json</button>
               <button class="btn btn-secondary" type="button" id="exportProductsButton">Exportar products.json</button>
               <button class="btn btn-secondary" type="button" id="exportCouponsButton">Exportar coupons.json</button>
+              <button class="btn btn-secondary" type="button" id="exportClientPhotosButton">Exportar client-photos.json</button>
+              <button class="btn btn-secondary" type="button" id="exportClientCommentsButton">Exportar client-comments.json</button>
             </div>
           </article>
 
@@ -426,6 +601,14 @@
             <div class="field">
               <label for="importCouponsInput">Importar cupones</label>
               <input id="importCouponsInput" type="file" accept="application/json" />
+            </div>
+            <div class="field">
+              <label for="importClientPhotosInput">Importar fotos de clientes</label>
+              <input id="importClientPhotosInput" type="file" accept="application/json" />
+            </div>
+            <div class="field">
+              <label for="importClientCommentsInput">Importar comentarios de clientes</label>
+              <input id="importClientCommentsInput" type="file" accept="application/json" />
             </div>
           </article>
 

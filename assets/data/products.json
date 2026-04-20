@@ -41,7 +41,40 @@
         "title": "Detalle",
         "caption": "Estética editorial con tonos crema y arena."
       }
-    ]
+    ],
+    "variants": [
+      {
+        "id": "amanecer-interno-vela-200",
+        "name": "Vela 200 g",
+        "presentation": "Frasco crema · 200 g",
+        "price": 85,
+        "badge": "Más elegido",
+        "isDefault": true,
+        "active": true,
+        "discount": {
+          "enabled": true,
+          "type": "percent",
+          "value": 10
+        },
+        "size": "200 g"
+      },
+      {
+        "id": "amanecer-interno-vela-320",
+        "name": "Vela 320 g",
+        "presentation": "Frasco vidrio ámbar · 320 g",
+        "price": 112,
+        "badge": "Mayor duración",
+        "isDefault": false,
+        "active": true,
+        "discount": {
+          "enabled": true,
+          "type": "percent",
+          "value": 5
+        },
+        "size": "320 g"
+      }
+    ],
+    "presentationSize": "200 g"
   },
   {
     "id": "brisa-de-alba",
@@ -77,7 +110,9 @@
         "title": "Vista principal",
         "caption": "Frescura aromática para volver a enfocar."
       }
-    ]
+    ],
+    "variants": [],
+    "presentationSize": "80 g"
   },
   {
     "id": "rocio-matinal",
@@ -113,7 +148,9 @@
         "title": "Vista principal",
         "caption": "Frescura suave para espacios pequeños."
       }
-    ]
+    ],
+    "variants": [],
+    "presentationSize": "50 g"
   },
   {
     "id": "ritual-citrico",
@@ -149,7 +186,40 @@
         "title": "Vista principal",
         "caption": "Limpieza suave y recuperación rápida."
       }
-    ]
+    ],
+    "variants": [
+      {
+        "id": "ritual-citrico-sales-120",
+        "name": "Sales 120 g",
+        "presentation": "Frasco mate · 120 g",
+        "price": 39,
+        "badge": "Baño de pies",
+        "isDefault": true,
+        "active": true,
+        "discount": {
+          "enabled": false,
+          "type": "percent",
+          "value": 0
+        },
+        "size": "120 g"
+      },
+      {
+        "id": "ritual-citrico-sales-240",
+        "name": "Sales 240 g",
+        "presentation": "Bolsa refill · 240 g",
+        "price": 61,
+        "badge": "Refill",
+        "isDefault": false,
+        "active": true,
+        "discount": {
+          "enabled": true,
+          "type": "fixed",
+          "value": 4
+        },
+        "size": "240 g"
+      }
+    ],
+    "presentationSize": "120 g"
   },
   {
     "id": "abrazo-de-hogar",
@@ -192,7 +262,40 @@
         "title": "Detalle",
         "caption": "Atmósfera de refugio y suavidad."
       }
-    ]
+    ],
+    "variants": [
+      {
+        "id": "abrazo-de-hogar-vela-220",
+        "name": "Vela 220 g",
+        "presentation": "Frasco piedra · 220 g",
+        "price": 88,
+        "badge": "Refugio cálido",
+        "isDefault": true,
+        "active": true,
+        "discount": {
+          "enabled": true,
+          "type": "percent",
+          "value": 12
+        },
+        "size": "220 g"
+      },
+      {
+        "id": "abrazo-de-hogar-vela-380",
+        "name": "Vela 380 g",
+        "presentation": "Frasco premium · 380 g",
+        "price": 126,
+        "badge": "Edición hogar",
+        "isDefault": false,
+        "active": true,
+        "discount": {
+          "enabled": false,
+          "type": "percent",
+          "value": 0
+        },
+        "size": "380 g"
+      }
+    ],
+    "presentationSize": "220 g"
   },
   {
     "id": "dulce-pausa",
@@ -228,7 +331,9 @@
         "title": "Vista principal",
         "caption": "Dulzura sensorial para un final de día más amable."
       }
-    ]
+    ],
+    "variants": [],
+    "presentationSize": "80 g"
   },
   {
     "id": "velo-de-seda",
@@ -264,7 +369,9 @@
         "title": "Vista principal",
         "caption": "Suavidad y aroma limpio para textiles."
       }
-    ]
+    ],
+    "variants": [],
+    "presentationSize": "50 g"
   },
   {
     "id": "manto-de-flores",
@@ -300,6 +407,8 @@
         "title": "Vista principal",
         "caption": "Contención sensorial para cuerpo y ánimo."
       }
-    ]
+    ],
+    "variants": [],
+    "presentationSize": "250 g"
   }
 ]

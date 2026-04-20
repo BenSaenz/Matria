@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cliente-maria-ritual",
+    "clientName": "María Fernanda",
+    "role": "Cliente MATRIA · regalo de cumpleaños",
+    "quote": "Elegí MATRIA para un regalo especial y terminé enamorada de la presentación y del aroma. La experiencia se siente cuidada de principio a fin.",
+    "caption": "Un regalo con intención, aroma y calma.",
+    "src": "assets/img/brand/clientes-placeholder-01.svg",
+    "alt": "Foto compartida por clienta con vela MATRIA",
+    "sortOrder": 1,
+    "active": true,
+    "linkedCommentId": "comment-mariana"
+  },
+  {
+    "id": "cliente-camila-ritual",
+    "clientName": "Camila R.",
+    "role": "Cliente MATRIA · ritual personal",
+    "quote": "Me encantó poder elegir la presentación. La vela llegó preciosa y el empaque se veía premium y delicado.",
+    "caption": "Detalles reales compartidos por clientas MATRIA.",
+    "src": "assets/img/brand/clientes-placeholder-02.svg",
+    "alt": "Foto compartida por clienta con producto MATRIA sobre mesa",
+    "sortOrder": 2,
+    "active": true,
+    "linkedCommentId": "comment-camila"
+  },
+  {
+    "id": "cliente-lucia-ritual",
+    "clientName": "Lucía P.",
+    "role": "Cliente MATRIA · compra por WhatsApp",
+    "quote": "Compré por WhatsApp y todo fue muy simple. Me gustó ver fotos reales de otras clientas para decidirme.",
+    "caption": "Fotos auténticas para reforzar confianza y prueba social.",
+    "src": "assets/img/brand/clientes-placeholder-03.svg",
+    "alt": "Foto compartida por clienta de un set MATRIA",
+    "sortOrder": 3,
+    "active": true,
+    "linkedCommentId": "comment-lucia"
+  }
+]

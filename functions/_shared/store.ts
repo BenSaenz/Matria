@@ -25,6 +25,7 @@ interface ProductRow {
   category: string;
   format: string | null;
   price: number;
+  presentation_size: string | null;
   badge: string | null;
   technical_blend: string | null;
   sales_speech: string | null;
@@ -36,6 +37,7 @@ interface ProductRow {
   discount_type: string | null;
   discount_value: number | null;
   media_json: string | null;
+  variants_json: string | null;
   sort_order: number;
   active: number;
 }
@@ -50,18 +52,47 @@ interface CouponRow {
   active: number;
 }
 
+interface ClientPhotoItem {
+  id: string;
+  clientName: string;
+  role: string;
+  quote: string;
+  caption: string;
+  src: string;
+  alt: string;
+  sortOrder: number;
+  linkedCommentId: string;
+  linkedPhotoId: string;
+  active: boolean;
+}
+
+interface ClientCommentItem {
+  id: string;
+  author: string;
+  role: string;
+  quote: string;
+  rating: number;
+  sortOrder: number;
+  linkedCommentId: string;
+  active: boolean;
+}
+
 export async function getStorePayload(env: Env) {
-  const [collectionsResult, productsResult, couponsResult, revision] = await Promise.all([
+  const [collectionsResult, productsResult, couponsResult, revision, clientPhotos, clientComments] = await Promise.all([
     env.DB.prepare(`SELECT * FROM collections ORDER BY sort_order ASC, name ASC`).all<CollectionRow>(),
     env.DB.prepare(`SELECT * FROM products ORDER BY sort_order ASC, name ASC`).all<ProductRow>(),
     env.DB.prepare(`SELECT * FROM coupons ORDER BY code ASC`).all<CouponRow>(),
-    readRevision(env)
+    readRevision(env),
+    loadClientPhotos(env),
+    loadClientComments(env)
   ]);
 
   return {
     collections: (collectionsResult.results || []).map(mapCollectionRow),
     products: (productsResult.results || []).map(mapProductRow),
     coupons: (couponsResult.results || []).map(mapCouponRow),
+    clientPhotos,
+    clientComments,
     revision
   };
 }
@@ -76,6 +107,12 @@ export async function replaceSection(env: Env, section: Section, payload: unknow
       break;
     case 'coupons':
       await replaceCoupons(env, payload as any[]);
+      break;
+    case 'clientPhotos':
+      await replaceClientPhotos(env, payload as any[]);
+      break;
+    case 'clientComments':
+      await replaceClientComments(env, payload as any[]);
       break;
     default:
       throw new Error('Sección no soportada.');
@@ -121,15 +158,14 @@ async function replaceProducts(env: Env, products: any[]) {
 
   for (const item of products) {
     const discount = item.discount || {};
-
     statements.push(
       env.DB.prepare(`
         INSERT INTO products (
-          id, collection_id, name, category, format, price, badge,
+          id, collection_id, name, category, format, price, presentation_size, badge,
           technical_blend, sales_speech, short_description, description,
           descriptions_json, features_json, discount_enabled, discount_type,
-          discount_value, media_json, sort_order, active, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          discount_value, media_json, variants_json, sort_order, active, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `).bind(
         String(item.id || ''),
         nullable(item.collectionId),
@@ -137,6 +173,7 @@ async function replaceProducts(env: Env, products: any[]) {
         String(item.category || 'General'),
         nullable(item.format || 'ritual'),
         Number(item.price || 0),
+        nullable(item.presentationSize),
         nullable(item.badge),
         nullable(item.technicalBlend),
         nullable(item.salesSpeech),
@@ -148,6 +185,7 @@ async function replaceProducts(env: Env, products: any[]) {
         nullable(discount.type || 'percent'),
         Number(discount.value || 0),
         JSON.stringify(Array.isArray(item.media) ? item.media : []),
+        JSON.stringify(Array.isArray(item.variants) ? item.variants : []),
         Number(item.sortOrder || 0),
         boolToInt(item.active !== false)
       )
@@ -209,6 +247,7 @@ function mapProductRow(row: ProductRow) {
     format: row.format || 'ritual',
     price: Number(row.price || 0),
     badge: row.badge || '',
+    presentationSize: row.presentation_size || '',
     technicalBlend: row.technical_blend || '',
     salesSpeech: row.sales_speech || '',
     shortDescription: row.short_description || '',
@@ -221,6 +260,7 @@ function mapProductRow(row: ProductRow) {
       value: Number(row.discount_value || 0)
     },
     media: safeParseJson(row.media_json, []),
+    variants: safeParseJson(row.variants_json, []),
     sortOrder: Number(row.sort_order || 0),
     active: Boolean(row.active)
   };
@@ -245,4 +285,41 @@ function boolToInt(value: boolean) {
 function nullable(value: unknown) {
   const text = value == null ? '' : String(value).trim();
   return text ? text : null;
+}
+
+
+async function replaceClientPhotos(env: Env, items: any[]) {
+  const sanitized = normalizeClientPhotoItems(items);
+
+  await env.DB
+    .prepare(`
+      INSERT INTO meta (key, value, updated_at)
+      VALUES ('client_photos', ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+    `)
+    .bind(JSON.stringify(sanitized))
+    .run();
+}
+
+async function loadClientPhotos(env: Env) {
+  const row = await env.DB
+    .prepare(`SELECT value FROM meta WHERE key = 'client_photos' LIMIT 1`)
+    .first<{ value: string | null }>();
+
+  return normalizeClientPhotoItems(safeParseJson(row?.value || '[]', []));
+}
+
+function normalizeClientPhotoItems(items: any[]): ClientPhotoItem[] {
+  return (Array.isArray(items) ? items : []).map((item, index) => ({
+    id: String(item?.id || `client-photo-${index + 1}`),
+    clientName: String(item?.clientName || item?.name || 'Cliente MATRIA'),
+    role: String(item?.role || ''),
+    quote: String(item?.quote || ''),
+    caption: String(item?.caption || ''),
+    src: String(item?.src || ''),
+    alt: String(item?.alt || item?.clientName || 'Foto de cliente MATRIA'),
+    sortOrder: Number(item?.sortOrder || 0),
+    linkedCommentId: String(item?.linkedCommentId || ''),
+    active: item?.active !== false
+  })).filter(item => item.src);
 }

@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "matria",
-      "database_id": "f33da567-163f-47f9-b2f9-c8dce1265545"
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
     }
   ]
 }
