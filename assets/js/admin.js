@@ -198,7 +198,6 @@ function renderAllAdmin() {
   syncDiscountPanelState();
 }
 
-
 function populateClientLinkSelects() {
   const photoSelect = document.getElementById('clientCommentLinkedPhotoId');
   const commentSelect = document.getElementById('clientPhotoLinkedCommentId');
@@ -236,7 +235,40 @@ function renderStats() {
     <article class="admin-stat-card"><span class="eyebrow">Fotos de clientes</span><strong>${activeClientPhotos}</strong><p>Imágenes activas en el carrusel.</p></article>
   `;
 }
+function renderClientPhotosTable() {
+  const body = document.getElementById('clientPhotosTableBody');
+  if (!body) return;
 
+  const rows = [...adminState.clientPhotos].sort(
+    (a, b) =>
+      Number(a.sortOrder || 0) - Number(b.sortOrder || 0) ||
+      String(a.clientName || '').localeCompare(String(b.clientName || ''), 'es')
+  );
+
+  body.innerHTML = rows.length
+    ? rows.map(item => `
+      <tr>
+        <td>
+          <div class="admin-photo-cell">
+            ${item.src ? `<img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt || item.clientName || 'Cliente MATRIA')}" class="admin-photo-thumb" />` : '<span class="table-empty-inline">Sin foto</span>'}
+          </div>
+        </td>
+        <td>${escapeHtml(item.clientName || 'Cliente MATRIA')}</td>
+        <td>${escapeHtml(item.role || '')}</td>
+        <td>${escapeHtml((item.quote || '').slice(0, 80))}</td>
+        <td>${item.active !== false ? '<span class="table-pill success">Activa</span>' : '<span class="table-pill muted">Oculta</span>'}</td>
+        <td>${escapeHtml(resolveLinkedCommentAuthor(item.linkedCommentId) || '—')}</td>
+        <td>
+          <button class="btn btn-ghost btn-small" type="button" data-edit-client-photo="${escapeHtml(item.id)}">Editar</button>
+        </td>
+      </tr>
+    `).join('')
+    : '<tr><td colspan="7" class="table-empty">Aún no agregaste fotos de clientes.</td></tr>';
+
+  body.querySelectorAll('[data-edit-client-photo]').forEach(button => {
+    button.addEventListener('click', () => loadClientPhotoIntoForm(button.dataset.editClientPhoto));
+  });
+}
 function renderCollectionsTable() {
   const tbody = document.getElementById('collectionsTableBody');
   if (!tbody) return;
