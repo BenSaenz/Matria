@@ -24,8 +24,8 @@ interface ProductRow {
   name: string;
   category: string;
   format: string | null;
-  price: number;
   presentation_size: string | null;
+  price: number;
   badge: string | null;
   technical_blend: string | null;
   sales_speech: string | null;
@@ -33,11 +33,11 @@ interface ProductRow {
   description: string | null;
   descriptions_json: string | null;
   features_json: string | null;
+  variants_json: string | null;
   discount_enabled: number;
   discount_type: string | null;
   discount_value: number | null;
   media_json: string | null;
-  variants_json: string | null;
   sort_order: number;
   active: number;
 }
@@ -62,7 +62,6 @@ interface ClientPhotoItem {
   alt: string;
   sortOrder: number;
   linkedCommentId: string;
-  linkedPhotoId: string;
   active: boolean;
 }
 
@@ -73,18 +72,30 @@ interface ClientCommentItem {
   quote: string;
   rating: number;
   sortOrder: number;
-  linkedCommentId: string;
+  linkedPhotoId: string;
+  active: boolean;
+}
+
+interface SocialEmbedItem {
+  id: string;
+  platform: 'instagram' | 'tiktok';
+  title: string;
+  handle: string;
+  url: string;
+  helperText: string;
+  sortOrder: number;
   active: boolean;
 }
 
 export async function getStorePayload(env: Env) {
-  const [collectionsResult, productsResult, couponsResult, revision, clientPhotos, clientComments] = await Promise.all([
+  const [collectionsResult, productsResult, couponsResult, revision, clientPhotos, clientComments, socials] = await Promise.all([
     env.DB.prepare(`SELECT * FROM collections ORDER BY sort_order ASC, name ASC`).all<CollectionRow>(),
     env.DB.prepare(`SELECT * FROM products ORDER BY sort_order ASC, name ASC`).all<ProductRow>(),
     env.DB.prepare(`SELECT * FROM coupons ORDER BY code ASC`).all<CouponRow>(),
     readRevision(env),
     loadClientPhotos(env),
-    loadClientComments(env)
+    loadClientComments(env),
+    loadSocialEmbeds(env)
   ]);
 
   return {
@@ -93,6 +104,7 @@ export async function getStorePayload(env: Env) {
     coupons: (couponsResult.results || []).map(mapCouponRow),
     clientPhotos,
     clientComments,
+    socials,
     revision
   };
 }
@@ -108,11 +120,14 @@ export async function replaceSection(env: Env, section: Section, payload: unknow
     case 'coupons':
       await replaceCoupons(env, payload as any[]);
       break;
-    case 'clientPhotos':
+    case 'client-photos':
       await replaceClientPhotos(env, payload as any[]);
       break;
-    case 'clientComments':
+    case 'client-comments':
       await replaceClientComments(env, payload as any[]);
+      break;
+    case 'socials':
+      await replaceSocialEmbeds(env, payload as any[]);
       break;
     default:
       throw new Error('Sección no soportada.');
@@ -158,13 +173,14 @@ async function replaceProducts(env: Env, products: any[]) {
 
   for (const item of products) {
     const discount = item.discount || {};
+
     statements.push(
       env.DB.prepare(`
         INSERT INTO products (
-          id, collection_id, name, category, format, price, presentation_size, badge,
+          id, collection_id, name, category, format, presentation_size, price, badge,
           technical_blend, sales_speech, short_description, description,
-          descriptions_json, features_json, discount_enabled, discount_type,
-          discount_value, media_json, variants_json, sort_order, active, updated_at
+          descriptions_json, features_json, variants_json, discount_enabled, discount_type,
+          discount_value, media_json, sort_order, active, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `).bind(
         String(item.id || ''),
@@ -172,8 +188,8 @@ async function replaceProducts(env: Env, products: any[]) {
         String(item.name || 'Producto'),
         String(item.category || 'General'),
         nullable(item.format || 'ritual'),
-        Number(item.price || 0),
         nullable(item.presentationSize),
+        Number(item.price || 0),
         nullable(item.badge),
         nullable(item.technicalBlend),
         nullable(item.salesSpeech),
@@ -181,11 +197,11 @@ async function replaceProducts(env: Env, products: any[]) {
         nullable(item.description),
         JSON.stringify(Array.isArray(item.descriptions) ? item.descriptions : []),
         JSON.stringify(Array.isArray(item.features) ? item.features : []),
+        JSON.stringify(Array.isArray(item.variants) ? item.variants : []),
         boolToInt(Boolean(discount.enabled)),
         nullable(discount.type || 'percent'),
         Number(discount.value || 0),
         JSON.stringify(Array.isArray(item.media) ? item.media : []),
-        JSON.stringify(Array.isArray(item.variants) ? item.variants : []),
         Number(item.sortOrder || 0),
         boolToInt(item.active !== false)
       )
@@ -218,75 +234,6 @@ async function replaceCoupons(env: Env, coupons: any[]) {
 
   await env.DB.batch(statements);
 }
-
-function mapCollectionRow(row: CollectionRow) {
-  return {
-    id: row.id,
-    code: row.code || '',
-    name: row.name,
-    title: row.title || row.name,
-    tagline: row.tagline || '',
-    story: row.story || '',
-    packName: row.pack_name || '',
-    packStory: row.pack_story || '',
-    ctaLabel: row.cta_label || 'Ver colección',
-    featured: Boolean(row.featured),
-    showOnHome: Boolean(row.show_on_home),
-    sortOrder: Number(row.sort_order || 0),
-    active: Boolean(row.active),
-    media: safeParseJson(row.media_json, [])
-  };
-}
-
-function mapProductRow(row: ProductRow) {
-  return {
-    id: row.id,
-    collectionId: row.collection_id || '',
-    name: row.name,
-    category: row.category,
-    format: row.format || 'ritual',
-    price: Number(row.price || 0),
-    badge: row.badge || '',
-    presentationSize: row.presentation_size || '',
-    technicalBlend: row.technical_blend || '',
-    salesSpeech: row.sales_speech || '',
-    shortDescription: row.short_description || '',
-    description: row.description || '',
-    descriptions: safeParseJson(row.descriptions_json, []),
-    features: safeParseJson(row.features_json, []),
-    discount: {
-      enabled: Boolean(row.discount_enabled),
-      type: row.discount_type === 'fixed' ? 'fixed' : 'percent',
-      value: Number(row.discount_value || 0)
-    },
-    media: safeParseJson(row.media_json, []),
-    variants: safeParseJson(row.variants_json, []),
-    sortOrder: Number(row.sort_order || 0),
-    active: Boolean(row.active)
-  };
-}
-
-function mapCouponRow(row: CouponRow) {
-  return {
-    id: row.id,
-    code: row.code,
-    type: row.type === 'fixed' ? 'fixed' : 'percent',
-    value: Number(row.value || 0),
-    minOrder: Number(row.min_order || 0),
-    description: row.description || '',
-    active: Boolean(row.active)
-  };
-}
-
-function boolToInt(value: boolean) {
-  return value ? 1 : 0;
-}
-
-function nullable(value: unknown) {
-  const text = value == null ? '' : String(value).trim();
-  return text ? text : null;
-}
-
 
 async function replaceClientPhotos(env: Env, items: any[]) {
   const sanitized = normalizeClientPhotoItems(items);
@@ -322,4 +269,140 @@ function normalizeClientPhotoItems(items: any[]): ClientPhotoItem[] {
     linkedCommentId: String(item?.linkedCommentId || ''),
     active: item?.active !== false
   })).filter(item => item.src);
+}
+
+async function replaceClientComments(env: Env, items: any[]) {
+  const sanitized = normalizeClientCommentItems(items);
+
+  await env.DB
+    .prepare(`
+      INSERT INTO meta (key, value, updated_at)
+      VALUES ('client_comments', ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+    `)
+    .bind(JSON.stringify(sanitized))
+    .run();
+}
+
+async function loadClientComments(env: Env) {
+  const row = await env.DB
+    .prepare(`SELECT value FROM meta WHERE key = 'client_comments' LIMIT 1`)
+    .first<{ value: string | null }>();
+
+  return normalizeClientCommentItems(safeParseJson(row?.value || '[]', []));
+}
+
+function normalizeClientCommentItems(items: any[]): ClientCommentItem[] {
+  return (Array.isArray(items) ? items : []).map((item, index) => ({
+    id: String(item?.id || `client-comment-${index + 1}`),
+    author: String(item?.author || item?.clientName || item?.name || 'Cliente MATRIA'),
+    role: String(item?.role || ''),
+    quote: String(item?.quote || item?.comment || ''),
+    rating: Number(item?.rating || 5),
+    sortOrder: Number(item?.sortOrder || 0),
+    linkedPhotoId: String(item?.linkedPhotoId || ''),
+    active: item?.active !== false
+  })).filter(item => item.quote);
+}
+
+async function replaceSocialEmbeds(env: Env, items: any[]) {
+  const sanitized = normalizeSocialEmbeds(items);
+
+  await env.DB
+    .prepare(`
+      INSERT INTO meta (key, value, updated_at)
+      VALUES ('social_embeds', ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+    `)
+    .bind(JSON.stringify(sanitized))
+    .run();
+}
+
+async function loadSocialEmbeds(env: Env) {
+  const row = await env.DB
+    .prepare(`SELECT value FROM meta WHERE key = 'social_embeds' LIMIT 1`)
+    .first<{ value: string | null }>();
+
+  return normalizeSocialEmbeds(safeParseJson(row?.value || '[]', []));
+}
+
+function normalizeSocialEmbeds(items: any[]): SocialEmbedItem[] {
+  return (Array.isArray(items) ? items : []).map((item, index) => ({
+    id: String(item?.id || `social-${index + 1}`),
+    platform: item?.platform === 'tiktok' ? 'tiktok' : 'instagram',
+    title: String(item?.title || ''),
+    handle: String(item?.handle || ''),
+    url: String(item?.url || ''),
+    helperText: String(item?.helperText || ''),
+    sortOrder: Number(item?.sortOrder || 0),
+    active: item?.active !== false
+  })).filter(item => item.url);
+}
+
+function mapCollectionRow(row: CollectionRow) {
+  return {
+    id: row.id,
+    code: row.code || '',
+    name: row.name,
+    title: row.title || row.name,
+    tagline: row.tagline || '',
+    story: row.story || '',
+    packName: row.pack_name || '',
+    packStory: row.pack_story || '',
+    ctaLabel: row.cta_label || 'Ver colección',
+    featured: Boolean(row.featured),
+    showOnHome: Boolean(row.show_on_home),
+    sortOrder: Number(row.sort_order || 0),
+    active: Boolean(row.active),
+    media: safeParseJson(row.media_json, [])
+  };
+}
+
+function mapProductRow(row: ProductRow) {
+  return {
+    id: row.id,
+    collectionId: row.collection_id || '',
+    name: row.name,
+    category: row.category,
+    format: row.format || 'ritual',
+    presentationSize: row.presentation_size || '',
+    price: Number(row.price || 0),
+    badge: row.badge || '',
+    technicalBlend: row.technical_blend || '',
+    salesSpeech: row.sales_speech || '',
+    shortDescription: row.short_description || '',
+    description: row.description || '',
+    descriptions: safeParseJson(row.descriptions_json, []),
+    features: safeParseJson(row.features_json, []),
+    variants: safeParseJson(row.variants_json, []),
+    discount: {
+      enabled: Boolean(row.discount_enabled),
+      type: row.discount_type === 'fixed' ? 'fixed' : 'percent',
+      value: Number(row.discount_value || 0)
+    },
+    media: safeParseJson(row.media_json, []),
+    sortOrder: Number(row.sort_order || 0),
+    active: Boolean(row.active)
+  };
+}
+
+function mapCouponRow(row: CouponRow) {
+  return {
+    id: row.id,
+    code: row.code,
+    type: row.type === 'fixed' ? 'fixed' : 'percent',
+    value: Number(row.value || 0),
+    minOrder: Number(row.min_order || 0),
+    description: row.description || '',
+    active: Boolean(row.active)
+  };
+}
+
+function boolToInt(value: boolean) {
+  return value ? 1 : 0;
+}
+
+function nullable(value: unknown) {
+  const text = value == null ? '' : String(value).trim();
+  return text ? text : null;
 }
