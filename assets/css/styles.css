@@ -1232,3 +1232,23 @@ nav.primary-nav { display: flex; justify-content: center; }
   .testimonial-miniatures { grid-template-columns: 1fr; }
   .testimonial-premium-quote { font-size: clamp(1.8rem, 8vw, 2.6rem); }
 }
+
+.admin-photo-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-photo-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(41, 37, 31, 0.12);
+  background: #fff;
+}
+
+.table-empty-inline {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
