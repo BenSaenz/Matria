@@ -20,11 +20,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const items = await request.json();
     const revision = await replaceSection(env, 'collections', items);
-    return new Response(JSON.stringify({ ok: true, revision }), { headers: corsHeaders });
+
+    return new Response(
+      JSON.stringify({ ok: true, revision }),
+      { headers: corsHeaders }
+    );
   } catch (error: any) {
     console.error('SAVE COLLECTIONS ERROR', error?.message, error?.stack);
+
     return new Response(
-      JSON.stringify({ ok: false, error: error?.message || 'Error guardando colecciones' }),
+      JSON.stringify({
+        ok: false,
+        error: error?.message || 'Error guardando colecciones'
+      }),
       { status: 500, headers: corsHeaders }
     );
   }
