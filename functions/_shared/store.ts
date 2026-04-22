@@ -172,6 +172,8 @@ async function replaceCollections(env: Env, collections: any[]) {
 
   await env.DB.batch(statements);
 }
+
+
 async function replaceProducts(env: Env, products: any[]) {
   const statements: D1PreparedStatement[] = [env.DB.prepare(`DELETE FROM products`)];
 
@@ -410,6 +412,7 @@ function nullable(value: unknown) {
   const text = value == null ? '' : String(value).trim();
   return text ? text : null;
 }
+
 
 function slugify(value: unknown) {
   return String(value || '')
