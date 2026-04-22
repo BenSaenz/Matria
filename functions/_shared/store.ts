@@ -137,40 +137,71 @@ export async function replaceSection(env: Env, section: Section, payload: unknow
 }
 
 async function replaceCollections(env: Env, collections: any[]) {
-  const statements: D1PreparedStatement[] = [env.DB.prepare(`DELETE FROM collections`)];
-
-  for (const item of collections) {
+  const normalized = (Array.isArray(collections) ? collections : []).map((item) => {
     const collectionId = String(
-      item.id ||
-      slugify(item.name || item.code || `coleccion-${Date.now()}`)
+      item.id || slugify(item.name || item.code || `coleccion-${Date.now()}`)
     );
 
-    statements.push(
-      env.DB.prepare(`
-        INSERT INTO collections (
-          id, code, name, title, tagline, story, pack_name, pack_story, cta_label,
-          featured, show_on_home, sort_order, active, media_json, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      `).bind(
-        collectionId,
-        nullable(item.code),
-        String(item.name || 'Colección'),
-        nullable(item.title || item.name),
-        nullable(item.tagline || item.shortConcept || item.concept),
-        nullable(item.story),
-        nullable(item.packName),
-        nullable(item.packStory),
-        nullable(item.ctaLabel || item.buttonText),
-        boolToInt(item.featured === true),
-        boolToInt(item.showOnHome !== false),
-        Number(item.sortOrder || 0),
-        boolToInt(item.active !== false),
-        JSON.stringify(Array.isArray(item.media) ? item.media : [])
-      )
-    );
+    return {
+      id: collectionId,
+      code: nullable(item.code),
+      name: String(item.name || 'Colección'),
+      title: nullable(item.title || item.name),
+      tagline: nullable(item.tagline || item.shortConcept || item.concept),
+      story: nullable(item.story),
+      packName: nullable(item.packName),
+      packStory: nullable(item.packStory),
+      ctaLabel: nullable(item.ctaLabel || item.buttonText),
+      featured: boolToInt(item.featured === true),
+      showOnHome: boolToInt(item.showOnHome !== false),
+      sortOrder: Number(item.sortOrder || 0),
+      active: boolToInt(item.active !== false),
+      mediaJson: JSON.stringify(Array.isArray(item.media) ? item.media : [])
+    };
+  });
+
+  const statements: D1PreparedStatement[] = normalized.map((item) =>
+    env.DB.prepare(`
+      INSERT INTO collections (
+        id, code, name, title, tagline, story, pack_name, pack_story, cta_label,
+        featured, show_on_home, sort_order, active, media_json, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(id) DO UPDATE SET
+        code = excluded.code,
+        name = excluded.name,
+        title = excluded.title,
+        tagline = excluded.tagline,
+        story = excluded.story,
+        pack_name = excluded.pack_name,
+        pack_story = excluded.pack_story,
+        cta_label = excluded.cta_label,
+        featured = excluded.featured,
+        show_on_home = excluded.show_on_home,
+        sort_order = excluded.sort_order,
+        active = excluded.active,
+        media_json = excluded.media_json,
+        updated_at = CURRENT_TIMESTAMP
+    `).bind(
+      item.id,
+      item.code,
+      item.name,
+      item.title,
+      item.tagline,
+      item.story,
+      item.packName,
+      item.packStory,
+      item.ctaLabel,
+      item.featured,
+      item.showOnHome,
+      item.sortOrder,
+      item.active,
+      item.mediaJson
+    )
+  );
+
+  if (statements.length) {
+    await env.DB.batch(statements);
   }
-
-  await env.DB.batch(statements);
 }
 
 
