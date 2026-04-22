@@ -1,22 +1,31 @@
 import type { Env } from '../_shared/utils';
-import { json, optionsHandler, parseJsonBody, requireAdmin } from '../_shared/utils';
 import { getStorePayload, replaceSection } from '../_shared/store';
 
-export const onRequestOptions: PagesFunction<Env> = async (context) => optionsHandler(context.request);
-
-export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const payload = await getStorePayload(context.env);
-  return json({ section: 'collections', data: payload.collections, revision: payload.revision }, 200, context.request);
+const corsHeaders = {
+  'content-type': 'application/json; charset=utf-8',
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET,POST,OPTIONS',
+  'access-control-allow-headers': 'content-type'
 };
 
-export const onRequestPut: PagesFunction<Env> = async (context) => {
-  const authError = await requireAdmin(context.request, context.env);
-  if (authError) return authError;
+export const onRequestOptions: PagesFunction<Env> = async () =>
+  new Response(null, { status: 204, headers: corsHeaders });
 
-  const parsed = await parseJsonBody<unknown[]>(context.request);
-  if (!parsed.ok) return parsed.response;
-  if (!Array.isArray(parsed.data)) return json({ error: 'Se esperaba un arreglo JSON.' }, 400, context.request);
+export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
+  const payload = await getStorePayload(env);
+  return new Response(JSON.stringify(payload.collections), { headers: corsHeaders });
+};
 
-  const revision = await replaceSection(context.env, 'collections', parsed.data);
-  return json({ ok: true, section: 'collections', revision }, 200, context.request);
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+  try {
+    const items = await request.json();
+    const revision = await replaceSection(env, 'collections', items);
+    return new Response(JSON.stringify({ ok: true, revision }), { headers: corsHeaders });
+  } catch (error: any) {
+    console.error('SAVE COLLECTIONS ERROR', error?.message, error?.stack);
+    return new Response(
+      JSON.stringify({ ok: false, error: error?.message || 'Error guardando colecciones' }),
+      { status: 500, headers: corsHeaders }
+    );
+  }
 };
