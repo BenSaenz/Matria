@@ -140,6 +140,11 @@ async function replaceCollections(env: Env, collections: any[]) {
   const statements: D1PreparedStatement[] = [env.DB.prepare(`DELETE FROM collections`)];
 
   for (const item of collections) {
+    const collectionId = String(
+      item.id ||
+      slugify(item.name || item.code || `coleccion-${Date.now()}`)
+    );
+
     statements.push(
       env.DB.prepare(`
         INSERT INTO collections (
@@ -147,16 +152,16 @@ async function replaceCollections(env: Env, collections: any[]) {
           featured, show_on_home, sort_order, active, media_json, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `).bind(
-        String(item.id || ''),
+        collectionId,
         nullable(item.code),
         String(item.name || 'Colección'),
         nullable(item.title || item.name),
-        nullable(item.tagline),
+        nullable(item.tagline || item.shortConcept || item.concept),
         nullable(item.story),
         nullable(item.packName),
         nullable(item.packStory),
-        nullable(item.ctaLabel),
-        boolToInt(item.featured !== false),
+        nullable(item.ctaLabel || item.buttonText),
+        boolToInt(item.featured === true),
         boolToInt(item.showOnHome !== false),
         Number(item.sortOrder || 0),
         boolToInt(item.active !== false),
@@ -167,7 +172,6 @@ async function replaceCollections(env: Env, collections: any[]) {
 
   await env.DB.batch(statements);
 }
-
 async function replaceProducts(env: Env, products: any[]) {
   const statements: D1PreparedStatement[] = [env.DB.prepare(`DELETE FROM products`)];
 
@@ -405,4 +409,14 @@ function boolToInt(value: boolean) {
 function nullable(value: unknown) {
   const text = value == null ? '' : String(value).trim();
   return text ? text : null;
+}
+
+function slugify(value: unknown) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || `coleccion-${Date.now()}`;
 }
