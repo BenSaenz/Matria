@@ -1,6 +1,6 @@
 const STORE_SYNC_KEY = 'matria-sync-revision-v1';
 const API_BASE = window.MATRIA_API_BASE || document.querySelector('meta[name="matria-api-base"]')?.content || '/api';
-const WHATSAPP_NUMBER = '51999999999';
+const WHATSAPP_NUMBER = '51907813883';
 const COLLECTIONS_STORAGE_KEY = 'matria-collections-v4';
 const PRODUCTS_STORAGE_KEY = 'matria-products-v4';
 const COUPONS_STORAGE_KEY = 'matria-coupons-v4';
