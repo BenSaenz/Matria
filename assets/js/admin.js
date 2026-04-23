@@ -137,7 +137,7 @@ async function saveRemoteSection(section, data) {
   });
 
   if (!response.ok) {
-    const message = await safeReadError(response);
+    const message = await safeReadError(response) || await response.text().catch(() => '');
     throw new Error(message || 'No se pudo guardar la información en Cloudflare D1.');
   }
 
@@ -236,40 +236,7 @@ function renderStats() {
     <article class="admin-stat-card"><span class="eyebrow">Fotos de clientes</span><strong>${activeClientPhotos}</strong><p>Imágenes activas en el carrusel.</p></article>
   `;
 }
-function renderClientPhotosTable() {
-  const body = document.getElementById('clientPhotosTableBody');
-  if (!body) return;
 
-  const rows = [...adminState.clientPhotos].sort(
-    (a, b) =>
-      Number(a.sortOrder || 0) - Number(b.sortOrder || 0) ||
-      String(a.clientName || '').localeCompare(String(b.clientName || ''), 'es')
-  );
-
-  body.innerHTML = rows.length
-    ? rows.map(item => `
-      <tr>
-        <td>
-          <div class="admin-photo-cell">
-            ${item.src ? `<img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt || item.clientName || 'Cliente MATRIA')}" class="admin-photo-thumb" />` : '<span class="table-empty-inline">Sin foto</span>'}
-          </div>
-        </td>
-        <td>${escapeHtml(item.clientName || 'Cliente MATRIA')}</td>
-        <td>${escapeHtml(item.role || '')}</td>
-        <td>${escapeHtml((item.quote || '').slice(0, 80))}</td>
-        <td>${item.active !== false ? '<span class="table-pill success">Activa</span>' : '<span class="table-pill muted">Oculta</span>'}</td>
-        <td>${escapeHtml(resolveLinkedCommentAuthor(item.linkedCommentId) || '—')}</td>
-        <td>
-          <button class="btn btn-ghost btn-small" type="button" data-edit-client-photo="${escapeHtml(item.id)}">Editar</button>
-        </td>
-      </tr>
-    `).join('')
-    : '<tr><td colspan="7" class="table-empty">Aún no agregaste fotos de clientes.</td></tr>';
-
-  body.querySelectorAll('[data-edit-client-photo]').forEach(button => {
-    button.addEventListener('click', () => loadClientPhotoIntoForm(button.dataset.editClientPhoto));
-  });
-}
 function renderCollectionsTable() {
   const tbody = document.getElementById('collectionsTableBody');
   if (!tbody) return;
@@ -780,6 +747,32 @@ function syncDiscountPanelState() {
 
 
 
+
+function renderClientPhotosTable() {
+  const body = document.getElementById('clientPhotosTableBody');
+  if (!body) return;
+
+  const rows = [...adminState.clientPhotos].sort((a, b) =>
+    Number(a.sortOrder || 0) - Number(b.sortOrder || 0) ||
+    String(a.clientName || '').localeCompare(String(b.clientName || ''), 'es')
+  );
+
+  body.innerHTML = rows.length ? rows.map(item => `
+    <tr>
+      <td>${item.src ? `<img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.alt || item.clientName || 'Cliente MATRIA')}" class="admin-photo-thumb" />` : '<span class="table-empty-inline">Sin foto</span>'}</td>
+      <td>${escapeHtml(item.clientName || 'Cliente MATRIA')}</td>
+      <td>${escapeHtml(item.src || '')}</td>
+      <td>${Number(item.sortOrder || 0)}</td>
+      <td>${item.active !== false ? '<span class="status-pill active">Activa</span>' : '<span class="status-pill inactive">Oculta</span>'}</td>
+      <td><div class="admin-actions-inline"><button class="btn btn-secondary btn-small" type="button" data-edit-client-photo="${escapeHtml(item.id)}">Editar</button></div></td>
+    </tr>
+  `).join('') : '<tr><td colspan="6">Aún no agregaste fotos de clientes.</td></tr>';
+
+  body.querySelectorAll('[data-edit-client-photo]').forEach(button => {
+    button.addEventListener('click', () => loadClientPhotoIntoForm(button.dataset.editClientPhoto));
+  });
+}
+
 function renderClientCommentsTable() {
   const body = document.getElementById('clientCommentsTableBody');
   if (!body) return;
@@ -815,12 +808,12 @@ function resolveLinkedPhotoName(photoId) {
 
 async function handleClientPhotoSubmit(event) {
   event.preventDefault();
-  const payload = createClientPhotoPayloadFromForm();
-  const existingIndex = adminState.clientPhotos.findIndex(item => item.id === payload.id);
-  if (existingIndex >= 0) adminState.clientPhotos.splice(existingIndex, 1, payload);
-  else adminState.clientPhotos.push(payload);
-
   try {
+    const payload = createClientPhotoPayloadFromForm();
+    const existingIndex = adminState.clientPhotos.findIndex(item => item.id === payload.id);
+    if (existingIndex >= 0) adminState.clientPhotos.splice(existingIndex, 1, payload);
+    else adminState.clientPhotos.push(payload);
+
     await persistClientPhotos();
     renderAllAdmin();
     loadClientPhotoIntoForm(payload.id);
@@ -841,7 +834,7 @@ function createClientPhotoPayloadFromForm() {
     src: document.getElementById('clientPhotoSrc').value.trim(),
     alt: document.getElementById('clientPhotoAlt').value.trim() || name,
     sortOrder: Number(document.getElementById('clientPhotoOrder').value || 0),
-    linkedCommentId: document.getElementById('clientPhotoLinkedCommentId').value.trim(),
+    linkedCommentId: document.getElementById('clientPhotoLinkedCommentId')?.value.trim() || '',
     active: document.getElementById('clientPhotoActive').checked
   }])[0];
 }
@@ -858,7 +851,7 @@ function loadClientPhotoIntoForm(photoId) {
   document.getElementById('clientPhotoSrc').value = item.src || '';
   document.getElementById('clientPhotoAlt').value = item.alt || '';
   document.getElementById('clientPhotoOrder').value = Number(item.sortOrder || 0);
-  document.getElementById('clientPhotoLinkedCommentId').value = item.linkedCommentId || '';
+  if (document.getElementById('clientPhotoLinkedCommentId')) document.getElementById('clientPhotoLinkedCommentId').value = item.linkedCommentId || '';
   document.getElementById('clientPhotoActive').checked = item.active !== false;
   document.getElementById('clientPhotoFile').value = '';
   document.getElementById('clientPhotoFormTitle').textContent = 'Editar foto del carrusel';
@@ -871,7 +864,7 @@ function resetClientPhotoForm() {
   document.getElementById('clientPhotoEditorForm')?.reset();
   document.getElementById('clientPhotoId').value = '';
   document.getElementById('clientPhotoOrder').value = '0';
-  document.getElementById('clientPhotoLinkedCommentId').value = '';
+  if (document.getElementById('clientPhotoLinkedCommentId')) document.getElementById('clientPhotoLinkedCommentId').value = '';
   populateClientLinkSelects();
   document.getElementById('clientPhotoActive').checked = true;
   document.getElementById('clientPhotoFormTitle').textContent = 'Agregar foto al carrusel';
@@ -916,12 +909,12 @@ function handleClientPhotoFileChange(event) {
 
 async function handleClientCommentSubmit(event) {
   event.preventDefault();
-  const payload = createClientCommentPayloadFromForm();
-  const existingIndex = adminState.clientComments.findIndex(item => item.id === payload.id);
-  if (existingIndex >= 0) adminState.clientComments.splice(existingIndex, 1, payload);
-  else adminState.clientComments.push(payload);
-
   try {
+    const payload = createClientCommentPayloadFromForm();
+    const existingIndex = adminState.clientComments.findIndex(item => item.id === payload.id);
+    if (existingIndex >= 0) adminState.clientComments.splice(existingIndex, 1, payload);
+    else adminState.clientComments.push(payload);
+
     await persistClientComments();
     renderAllAdmin();
     loadClientCommentIntoForm(payload.id);
@@ -940,7 +933,7 @@ function createClientCommentPayloadFromForm() {
     quote: document.getElementById('clientCommentQuote').value.trim(),
     rating: Number(document.getElementById('clientCommentRating').value || 5),
     sortOrder: Number(document.getElementById('clientCommentOrder').value || 0),
-    linkedPhotoId: document.getElementById('clientCommentLinkedPhotoId').value.trim(),
+    linkedPhotoId: document.getElementById('clientCommentLinkedPhotoId')?.value.trim() || '',
     active: document.getElementById('clientCommentActive').checked
   }])[0];
 }
@@ -955,7 +948,7 @@ function loadClientCommentIntoForm(commentId) {
   document.getElementById('clientCommentQuote').value = item.quote || '';
   document.getElementById('clientCommentRating').value = Number(item.rating || 5);
   document.getElementById('clientCommentOrder').value = Number(item.sortOrder || 0);
-  document.getElementById('clientCommentLinkedPhotoId').value = item.linkedPhotoId || '';
+  if (document.getElementById('clientCommentLinkedPhotoId')) document.getElementById('clientCommentLinkedPhotoId').value = item.linkedPhotoId || '';
   document.getElementById('clientCommentActive').checked = item.active !== false;
   document.getElementById('clientCommentFormTitle').textContent = 'Editar comentario del cliente';
   document.getElementById('deleteClientCommentButton').disabled = false;
@@ -968,7 +961,7 @@ function resetClientCommentForm() {
   document.getElementById('clientCommentId').value = '';
   document.getElementById('clientCommentRating').value = '5';
   document.getElementById('clientCommentOrder').value = '0';
-  document.getElementById('clientCommentLinkedPhotoId').value = '';
+  if (document.getElementById('clientCommentLinkedPhotoId')) document.getElementById('clientCommentLinkedPhotoId').value = '';
   populateClientLinkSelects();
   document.getElementById('clientCommentActive').checked = true;
   document.getElementById('clientCommentFormTitle').textContent = 'Agregar comentario de cliente';
@@ -1091,6 +1084,12 @@ async function persistClientPhotos() {
   writeStorage(CLIENT_PHOTOS_STORAGE_KEY, adminState.clientPhotos);
   writeStorage(CLIENT_COMMENTS_STORAGE_KEY, adminState.clientComments);
   return saveRemoteSection('client-photos', adminState.clientPhotos);
+}
+
+async function persistClientComments() {
+  writeStorage(CLIENT_COMMENTS_STORAGE_KEY, adminState.clientComments);
+  writeStorage(CLIENT_PHOTOS_STORAGE_KEY, adminState.clientPhotos);
+  return saveRemoteSection('client-comments', adminState.clientComments);
 }
 
 function normalizeCollections(list) {
