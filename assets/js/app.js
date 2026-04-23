@@ -85,62 +85,56 @@ function bindForms() {
 }
 
 
-function findLinkedPhotoForComment(comment) {
-  if (!comment) return null;
-  const activePhotos = state.clientPhotos.filter(item => item.active !== false && item.src);
-  return activePhotos.find(item => item.id === comment.linkedPhotoId || item.linkedCommentId === comment.id || normalizeLooseName(item.clientName) === normalizeLooseName(comment.author)) || null;
-}
-
 function findLinkedCommentForPhoto(photo) {
   if (!photo) return null;
   const activeComments = state.clientComments.filter(item => item.active !== false && item.quote);
-  return activeComments.find(item => item.id === photo.linkedCommentId || item.linkedPhotoId === photo.id || normalizeLooseName(item.author) === normalizeLooseName(photo.clientName)) || null;
+  return activeComments.find(item => item.id === photo.linkedCommentId || item.linkedPhotoId === photo.id) || null;
 }
 
-function normalizeLooseName(value) {
-  return String(value || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+function getInitials(value) {
+  return String(value || 'CM')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase() || '')
+    .join('') || 'CM';
 }
 
 function buildPremiumTestimonials() {
-  const comments = [...(state.clientComments || [])]
-    .filter(item => item.active !== false && item.quote)
-    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || String(a.author || '').localeCompare(String(b.author || ''), 'es'));
-
-  const photoOnlyEntries = [...(state.clientPhotos || [])]
+  const photos = [...(state.clientPhotos || [])]
     .filter(item => item.active !== false && item.src)
     .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || String(a.clientName || '').localeCompare(String(b.clientName || ''), 'es'))
-    .map(photo => ({
-      id: `photo-${photo.id}`,
-      author: photo.clientName || 'Cliente MATRIA',
-      role: photo.role || '',
-      quote: photo.quote || photo.caption || 'Una experiencia real compartida por nuestra comunidad.',
-      rating: 5,
-      photo,
-      comment: findLinkedCommentForPhoto(photo),
-      sortOrder: Number(photo.sortOrder || 0)
-    }));
+    .map(photo => {
+      const linkedComment = findLinkedCommentForPhoto(photo);
+      return {
+        id: `photo-${photo.id}`,
+        type: 'photo',
+        author: photo.clientName || 'Cliente MATRIA',
+        role: photo.role || linkedComment?.role || '',
+        quote: photo.quote || photo.caption || linkedComment?.quote || 'Una experiencia real compartida por nuestra comunidad.',
+        rating: Math.max(1, Math.min(5, Number(linkedComment?.rating || photo.rating || 5))),
+        photo,
+        comment: linkedComment || null,
+        sortOrder: Number(photo.sortOrder || 0)
+      };
+    });
 
-  const commentEntries = comments.map(comment => {
-    const photo = findLinkedPhotoForComment(comment);
-    return {
+  const comments = [...(state.clientComments || [])]
+    .filter(item => item.active !== false && item.quote)
+    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || String(a.author || '').localeCompare(String(b.author || ''), 'es'))
+    .map(comment => ({
       id: `comment-${comment.id}`,
-      author: comment.author || photo?.clientName || 'Cliente MATRIA',
-      role: comment.role || photo?.role || '',
-      quote: comment.quote || photo?.quote || photo?.caption || '',
-      rating: Number(comment.rating || 5),
-      photo: photo || null,
+      type: 'comment',
+      author: comment.author || 'Cliente MATRIA',
+      role: comment.role || '',
+      quote: comment.quote || '',
+      rating: Math.max(1, Math.min(5, Number(comment.rating || 5))),
+      photo: null,
       comment,
       sortOrder: Number(comment.sortOrder || 0)
-    };
-  });
+    }));
 
-  const entries = [...commentEntries];
-  const usedPhotoIds = new Set(commentEntries.map(item => item.photo?.id).filter(Boolean));
-  photoOnlyEntries.forEach(item => {
-    if (!usedPhotoIds.has(item.photo?.id)) entries.push(item);
-  });
-
-  return entries;
+  return [...photos, ...comments];
 }
 
 function renderTestimonials() {
@@ -160,19 +154,28 @@ function renderTestimonials() {
   if (state.activeTestimonialIndex >= items.length) state.activeTestimonialIndex = 0;
   const active = items[state.activeTestimonialIndex] || items[0];
   const stars = '★'.repeat(Math.max(1, Math.min(5, Number(active.rating || 5))));
-  const imageSrc = active.photo?.src || 'assets/img/brand/clientes-placeholder-01.svg';
+  const hasPhoto = Boolean(active.photo?.src);
+  const imageSrc = active.photo?.src || '';
   const imageAlt = active.photo?.alt || active.author || 'Cliente MATRIA';
-  const caption = active.photo?.caption || active.comment?.role || active.role || '';
+  const caption = active.photo?.caption || active.role || '';
 
   container.innerHTML = `
-    <article class="testimonial-premium testimonial-fade-enter reveal in-view">
+    <article class="testimonial-premium testimonial-fade-enter reveal in-view ${hasPhoto ? 'has-photo' : 'is-comment-only'}">
       <div class="testimonial-premium-main">
-        <div class="testimonial-premium-visual">
-          <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(imageAlt)}" loading="lazy" />
-          <div class="testimonial-premium-badge">
-            <span class="eyebrow">Comunidad MATRIA</span>
-            <strong>${escapeHtml(active.author || 'Cliente MATRIA')}</strong>
-          </div>
+        <div class="testimonial-premium-visual ${hasPhoto ? '' : 'is-comment-panel'}">
+          ${hasPhoto ? `
+            <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(imageAlt)}" loading="lazy" />
+            <div class="testimonial-premium-badge">
+              <span class="eyebrow">Comunidad MATRIA</span>
+              <strong>${escapeHtml(active.author || 'Cliente MATRIA')}</strong>
+            </div>
+          ` : `
+            <div class="testimonial-premium-monogram" aria-hidden="true">${escapeHtml(getInitials(active.author))}</div>
+            <div class="testimonial-premium-badge testimonial-premium-badge-static">
+              <span class="eyebrow">Comentario de cliente</span>
+              <strong>${escapeHtml(active.author || 'Cliente MATRIA')}</strong>
+            </div>
+          `}
         </div>
         <div class="testimonial-premium-copy">
           <div class="testimonial-premium-top">
@@ -192,14 +195,17 @@ function renderTestimonials() {
       </div>
       <div class="testimonial-miniatures" role="tablist" aria-label="Seleccionar testimonio">
         ${items.map((item, index) => {
-          const thumbSrc = item.photo?.src || imageSrc;
+          const itemHasPhoto = Boolean(item.photo?.src);
+          const thumbSrc = item.photo?.src || '';
           const thumbAlt = item.photo?.alt || item.author || 'Cliente MATRIA';
           return `
             <button class="testimonial-miniature ${index === state.activeTestimonialIndex ? 'is-active' : ''}" type="button" data-testimonial-index="${index}" aria-label="Ver testimonio de ${escapeHtml(item.author || 'Cliente MATRIA')}">
-              <span class="testimonial-miniature-thumb"><img src="${escapeHtml(thumbSrc)}" alt="${escapeHtml(thumbAlt)}" loading="lazy" /></span>
+              <span class="testimonial-miniature-thumb ${itemHasPhoto ? '' : 'is-comment-thumb'}">
+                ${itemHasPhoto ? `<img src="${escapeHtml(thumbSrc)}" alt="${escapeHtml(thumbAlt)}" loading="lazy" />` : `<span class="testimonial-miniature-initials">${escapeHtml(getInitials(item.author))}</span>`}
+              </span>
               <span class="testimonial-miniature-copy">
                 <strong>${escapeHtml(item.author || 'Cliente MATRIA')}</strong>
-                <span>${escapeHtml((item.role || '').slice(0, 42) || 'Experiencia real')}</span>
+                <span>${escapeHtml((item.role || '').slice(0, 48) || 'Experiencia real')}</span>
               </span>
             </button>
           `;
