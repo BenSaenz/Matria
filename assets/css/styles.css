@@ -280,34 +280,18 @@ nav.primary-nav { display: flex; justify-content: center; }
 .hero-media {
   position: relative;
   min-height: 400px;
-  background: radial-gradient(circle at top, rgba(255,255,255,.12), transparent 35%), linear-gradient(155deg, #d8cec3, #b9afa3 40%, #8d7f71 100%);
+  background: linear-gradient(155deg, #d8cec3, #b9afa3 40%, #8d7f71 100%);
   isolation: isolate;
-}
-.hero-media::before,
-.hero-media::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(6px);
-  opacity: .35;
-  z-index: 0;
-}
-.hero-media::before { width: 380px; height: 380px; background: rgba(255,255,255,.25); top: 12%; left: 14%; }
-.hero-media::after { width: 280px; height: 280px; background: rgba(166,177,159,.28); bottom: 8%; right: 10%; }
-.hero-composition { position: absolute; inset: 0; display: grid; place-items: center; padding: 2rem; z-index: 1; }
-.hero-ritual {
-  width: min(82%, 560px);
-  aspect-ratio: 4 / 5;
-  border-radius: 38% 38% 34% 34% / 32% 32% 40% 40%;
-  background:
-    radial-gradient(circle at 50% 24%, rgba(255,255,255,.95) 0 12%, transparent 12.5%),
-    radial-gradient(circle at 50% 58%, rgba(226,209,187,.68) 0 21%, rgba(245,239,232,.85) 22%, rgba(255,255,255,.12) 58%, transparent 59%),
-    linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.42));
-  border: 1px solid rgba(255,255,255,.42);
-  box-shadow: 0 30px 70px rgba(41,37,31,.22);
-  position: relative;
   overflow: hidden;
 }
+.hero-composition {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  z-index: 1;
+}x: 1; }
 .hero-ritual::before {
   content: '';
   position: absolute;
