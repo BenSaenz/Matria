@@ -17,6 +17,11 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
   if (!parsed.ok) return parsed.response;
   if (!Array.isArray(parsed.data)) return json({ error: 'Se esperaba un arreglo JSON.' }, 400, context.request);
 
-  const revision = await replaceSection(context.env, 'clientComments', parsed.data);
-  return json({ ok: true, section: 'clientComments', revision }, 200, context.request);
+  try {
+    const revision = await replaceSection(context.env, 'clientComments', parsed.data);
+    return json({ ok: true, section: 'clientComments', revision }, 200, context.request);
+  } catch (error: any) {
+    console.error('SAVE CLIENT COMMENTS ERROR', error?.message, error?.stack);
+    return json({ ok: false, error: error?.message || 'Error guardando comentarios de clientes.' }, 500, context.request);
+  }
 };
