@@ -645,8 +645,8 @@ function renderProductModal() {
         </div>
         ${selectedVariant ? `<div class="notice"><strong>Presentación elegida:</strong> ${escapeHtml(selectedVariant.name)}${selectedVariant.presentation ? `<br />${escapeHtml(selectedVariant.presentation)}` : ''}${selectedVariant.size ? `<br /><strong>Tamaño:</strong> ${escapeHtml(selectedVariant.size)}` : ''}</div>` : (product.presentationSize ? `<div class="notice"><strong>Tamaño base:</strong> ${escapeHtml(product.presentationSize)}</div>` : '')}
         ${collection ? `<div class="notice"><strong>Colección:</strong> ${escapeHtml(collection.code ? `${collection.code}. ${collection.name}` : collection.name)}<br />${escapeHtml(collection.tagline || '')}</div>` : ''}
-        ${product.technicalBlend ? `<div class="spec-line"><strong>Mezcla técnica:</strong> ${escapeHtml(product.technicalBlend)}</div>` : ''}
-        ${product.salesSpeech ? `<div class="spec-line"><strong>Gancho de venta:</strong> ${escapeHtml(product.salesSpeech)}</div>` : ''}
+        ${product.technicalBlend ? `<div class="spec-line"><strong>Aroma:</strong> ${escapeHtml(product.technicalBlend)}</div>` : ''}
+        ${product.salesSpeech ? `<p class="product-sales-speech">${product.salesSpeech}</p>` : ''}
         <p>${escapeHtml(product.description || '')}</p>
         ${Array.isArray(product.descriptions) && product.descriptions.length ? `<div class="description-stack">${product.descriptions.map(item => `<p>${escapeHtml(item)}</p>`).join('')}</div>` : ''}
         ${variants.length ? `
