@@ -23,6 +23,11 @@ const adminState = {
   revision: null
 };
 
+const adminFilters = {
+  productCollection: '',
+  productQuery: ''
+};
+
 document.addEventListener('DOMContentLoaded', initAdmin);
 
 async function initAdmin() {
@@ -189,12 +194,15 @@ function bindAdminEvents() {
 function renderAllAdmin() {
   renderStats();
   renderCollectionsTable();
+  ensureProductFiltersUI();
+  populateCollectionSelect();
+  populateProductCollectionFilter();
+  bindProductFilters();
   renderProductsTable();
   renderCouponsTable();
   renderClientPhotosTable();
   renderClientCommentsTable();
   populateClientLinkSelects();
-  populateCollectionSelect();
   syncDiscountPanelState();
 }
 
@@ -267,12 +275,18 @@ function renderCollectionsTable() {
 function renderProductsTable() {
   const tbody = document.getElementById('productsTableBody');
   if (!tbody) return;
-  if (!adminState.products.length) {
-    tbody.innerHTML = '<tr><td colspan="8">No hay productos cargados.</td></tr>';
+
+  const rows = getFilteredProducts().sort((a, b) =>
+    Number(a.sortOrder || 0) - Number(b.sortOrder || 0) ||
+    String(a.name || '').localeCompare(String(b.name || ''), 'es')
+  );
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8">No hay productos que coincidan con el filtro.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = adminState.products.map(product => {
+  tbody.innerHTML = rows.map(product => {
     const collection = getCollectionById(product.collectionId);
     const variants = getActiveVariants(product);
     return `
@@ -314,6 +328,141 @@ function renderCouponsTable() {
 
   tbody.querySelectorAll('[data-edit-coupon]').forEach(button => button.addEventListener('click', () => loadCouponIntoForm(button.dataset.editCoupon)));
   tbody.querySelectorAll('[data-remove-coupon]').forEach(button => button.addEventListener('click', () => deleteCoupon(button.dataset.removeCoupon)));
+}
+
+
+function ensureProductFiltersUI() {
+  if (document.getElementById('productFilterCollection') && document.getElementById('productFilterQuery')) return;
+
+  const tbody = document.getElementById('productsTableBody');
+  if (!tbody) return;
+
+  const table = tbody.closest('table');
+  const host = table?.parentElement || tbody.parentElement;
+  if (!host) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'admin-filters admin-filters--products';
+  wrapper.style.display = 'grid';
+  wrapper.style.gridTemplateColumns = '1fr 1.2fr auto';
+  wrapper.style.gap = '1rem';
+  wrapper.style.marginBottom = '1.25rem';
+  wrapper.style.alignItems = 'end';
+
+  wrapper.innerHTML = `
+    <div class="field">
+      <label for="productFilterCollection">Filtrar por colección</label>
+      <select id="productFilterCollection">
+        <option value="">Todas las colecciones</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="productFilterQuery">Buscar producto</label>
+      <input
+        id="productFilterQuery"
+        type="text"
+        placeholder="Nombre, id, categoría o formato"
+        autocomplete="off"
+      />
+    </div>
+    <div class="field field--actions">
+      <label>&nbsp;</label>
+      <button type="button" class="btn btn-ghost" id="productFilterReset">Limpiar filtros</button>
+    </div>
+  `;
+
+  host.insertBefore(wrapper, table || tbody);
+}
+
+function populateProductCollectionFilter() {
+  const select = document.getElementById('productFilterCollection');
+  if (!select) return;
+
+  const previousValue = adminFilters.productCollection || '';
+  const collections = [...(adminState.collections || [])].sort((a, b) =>
+    String(a.name || '').localeCompare(String(b.name || ''), 'es')
+  );
+
+  select.innerHTML = `
+    <option value="">Todas las colecciones</option>
+    ${collections.map(item => `
+      <option value="${escapeHtml(item.id)}">${escapeHtml(item.code ? `${item.code}. ${item.name}` : item.name || item.id)}</option>
+    `).join('')}
+  `;
+
+  select.value = previousValue;
+}
+
+function getFilteredProducts() {
+  const products = Array.isArray(adminState.products) ? [...adminState.products] : [];
+  const query = String(adminFilters.productQuery || '').trim().toLowerCase();
+  const collectionId = String(adminFilters.productCollection || '').trim();
+
+  return products.filter(product => {
+    const matchesCollection = !collectionId || String(product.collectionId || '') === collectionId;
+
+    const haystack = [
+      product.id,
+      product.name,
+      product.category,
+      product.format,
+      product.badge,
+      product.collectionId,
+      product.presentationSize
+    ]
+      .map(value => String(value || '').toLowerCase())
+      .join(' ');
+
+    const matchesQuery = !query || haystack.includes(query);
+
+    return matchesCollection && matchesQuery;
+  });
+}
+
+function bindProductFilters() {
+  const collectionSelect = document.getElementById('productFilterCollection');
+  const queryInput = document.getElementById('productFilterQuery');
+  const resetButton = document.getElementById('productFilterReset');
+
+  if (collectionSelect && !collectionSelect.dataset.bound) {
+    collectionSelect.addEventListener('change', (event) => {
+      adminFilters.productCollection = event.target.value || '';
+      renderProductsTable();
+    });
+    collectionSelect.dataset.bound = 'true';
+  }
+
+  if (queryInput && !queryInput.dataset.bound) {
+    queryInput.addEventListener('input', (event) => {
+      adminFilters.productQuery = event.target.value || '';
+      renderProductsTable();
+    });
+    queryInput.dataset.bound = 'true';
+  }
+
+  if (resetButton && !resetButton.dataset.bound) {
+    resetButton.addEventListener('click', () => {
+      adminFilters.productCollection = '';
+      adminFilters.productQuery = '';
+
+      if (collectionSelect) collectionSelect.value = '';
+      if (queryInput) queryInput.value = '';
+
+      renderProductsTable();
+    });
+    resetButton.dataset.bound = 'true';
+  }
+}
+
+function syncProductFilterWithCurrentProduct(product) {
+  const collectionSelect = document.getElementById('productFilterCollection');
+  const queryInput = document.getElementById('productFilterQuery');
+
+  adminFilters.productCollection = String(product?.collectionId || '');
+  adminFilters.productQuery = String(product?.name || '');
+
+  if (collectionSelect) collectionSelect.value = adminFilters.productCollection;
+  if (queryInput) queryInput.value = adminFilters.productQuery;
 }
 
 function populateCollectionSelect() {
@@ -523,6 +672,7 @@ function loadProductIntoForm(productId) {
   (product.media.length ? product.media : [{ type: 'image', src: '', alt: '', title: '', caption: '' }]).forEach(media => addMediaField(mediaList, media));
   (product.variants.length ? product.variants : []).forEach(variant => addPresentationField(presentationsList, variant));
   document.getElementById('deleteProductButton').disabled = false;
+  syncProductFilterWithCurrentProduct(product);
   syncDiscountPanelState();
   window.scrollTo({ top: document.getElementById('productos').offsetTop - 90, behavior: 'smooth' });
 }
