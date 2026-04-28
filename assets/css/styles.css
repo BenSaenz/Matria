@@ -280,88 +280,66 @@ nav.primary-nav { display: flex; justify-content: center; }
 .hero-media {
   position: relative;
   min-height: 400px;
-  height: 100%;
-  overflow: hidden;
-  background: linear-gradient(155deg, #d8cec3, #b9afa3 40%, #8d7f71 100%);
+  background: radial-gradient(circle at top, rgba(255,255,255,.12), transparent 35%), linear-gradient(155deg, #d8cec3, #b9afa3 40%, #8d7f71 100%);
   isolation: isolate;
 }
-
-.hero-composition {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: stretch;
-  padding: 0;
-  z-index: 1;
-}
-
-.hero-composition--image {
-  width: 100%;
-  height: 100%;
-}
-
-.hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  border-radius: 0;
-  max-width: none;
-  max-height: none;
-  box-shadow: none;
-  transform: none;
-  animation: none;
-  transition: none;
-  filter: none;
-}
-/* Hero: mostrar solo la imagen, sin cuadro flotante */
-.floating-card {
-  display: none !important;
-}
-
-.hero-media {
-  position: relative;
-  min-height: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: none;
-  isolation: isolate;
-}
-
-.hero-composition {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-.hero-composition--image {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-}
-
-.hero-image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 0;
-  max-width: none;
-  max-height: none;
-  box-shadow: none;
-  transform: none;
-  animation: none;
-  transition: none;
-  filter: none;
-}
-
 .hero-media::before,
 .hero-media::after {
-  content: none !important;
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(6px);
+  opacity: .35;
+  z-index: 0;
 }
-
+.hero-media::before { width: 380px; height: 380px; background: rgba(255,255,255,.25); top: 12%; left: 14%; }
+.hero-media::after { width: 280px; height: 280px; background: rgba(166,177,159,.28); bottom: 8%; right: 10%; }
+.hero-composition { position: absolute; inset: 0; display: grid; place-items: center; padding: 2rem; z-index: 1; }
+.hero-ritual {
+  width: min(82%, 560px);
+  aspect-ratio: 4 / 5;
+  border-radius: 38% 38% 34% 34% / 32% 32% 40% 40%;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255,255,255,.95) 0 12%, transparent 12.5%),
+    radial-gradient(circle at 50% 58%, rgba(226,209,187,.68) 0 21%, rgba(245,239,232,.85) 22%, rgba(255,255,255,.12) 58%, transparent 59%),
+    linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.42));
+  border: 1px solid rgba(255,255,255,.42);
+  box-shadow: 0 30px 70px rgba(41,37,31,.22);
+  position: relative;
+  overflow: hidden;
+}
+.hero-ritual::before {
+  content: '';
+  position: absolute;
+  inset: 8% 8% auto;
+  height: 60%;
+  border-radius: 2rem;
+  background: radial-gradient(circle at 22% 68%, rgba(190,172,153,.28) 0 14%, transparent 15%), radial-gradient(circle at 73% 38%, rgba(166,177,159,.32) 0 10%, transparent 11%), radial-gradient(circle at 62% 76%, rgba(185,120,96,.22) 0 12%, transparent 13%), linear-gradient(180deg, rgba(255,255,255,.72), rgba(226,219,211,.18));
+}
+.hero-ritual::after {
+  content: '';
+  position: absolute;
+  width: 70%;
+  height: 22%;
+  left: 15%;
+  bottom: 8%;
+  border-radius: 50%;
+  background: rgba(72,57,43,.14);
+  filter: blur(18px);
+}
+.floating-card {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  max-width: 240px;
+  padding: 1rem;
+  border-radius: var(--radius-m);
+  background: rgba(251,248,243,.84);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,.4);
+  box-shadow: var(--shadow);
+}
+.floating-card strong { display: block; margin-bottom: .35rem; font-size: 1rem; }
 
 .pillars-grid,
 .products-grid,
@@ -1129,28 +1107,6 @@ nav.primary-nav { display: flex; justify-content: center; }
   height: 100%;
   object-fit: cover;
 }
-.testimonial-premium-visual.is-comment-panel {
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.88), rgba(242,237,230,.9) 45%, rgba(216,206,196,.72) 100%);
-}
-.testimonial-premium-monogram {
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(41, 37, 31, .12);
-  background: rgba(255,255,255,.72);
-  color: var(--ink);
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 3rem;
-  font-weight: 600;
-  letter-spacing: -.04em;
-}
-.testimonial-premium-badge-static {
-  position: absolute;
-}
 .testimonial-premium-badge {
   position: absolute;
   left: 1rem;
@@ -1253,18 +1209,6 @@ nav.primary-nav { display: flex; justify-content: center; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-.testimonial-miniature-thumb.is-comment-thumb {
-  display: grid;
-  place-items: center;
-  background: rgba(255,255,255,.84);
-  border: 1px solid rgba(41, 37, 31, .08);
-}
-.testimonial-miniature-initials {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--ink);
 }
 .testimonial-miniature-copy {
   display: grid;
@@ -1374,11 +1318,63 @@ nav.primary-nav { display: flex; justify-content: center; }
   }
 }
 
+/* =========================
+   Admin product filters
+   Añadir al final de assets/css/styles.css
+   ========================= */
 
-/* Product detail text cleanup */
-.product-sales-speech {
-  margin-top: 0.75rem;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--ink-soft);
+.admin-filters {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr auto;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+
+.admin-filters .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.admin-filters .field label {
+  font-size: 0.9rem;
+  color: var(--ink-soft, #6b6259);
+}
+
+.admin-filters .field input,
+.admin-filters .field select {
+  min-height: 44px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(41, 37, 31, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink, #29251f);
+  width: 100%;
+}
+
+.admin-filters .field input::placeholder {
+  color: rgba(41, 37, 31, 0.45);
+}
+
+.admin-filters .field--actions {
+  justify-content: flex-end;
+}
+
+.admin-filters .field--actions .btn {
+  min-height: 44px;
+}
+
+@media (max-width: 860px) {
+  .admin-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-filters .field--actions {
+    justify-content: stretch;
+  }
+
+  .admin-filters .field--actions .btn {
+    width: 100%;
+  }
 }
