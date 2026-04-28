@@ -327,19 +327,52 @@ nav.primary-nav { display: flex; justify-content: center; }
   background: rgba(72,57,43,.14);
   filter: blur(18px);
 }
+/* Hero: mostrar solo la imagen, sin cuadro flotante */
 .floating-card {
-  position: absolute;
-  right: 1.4rem;
-  bottom: 1.4rem;
-  max-width: 240px;
-  padding: 1rem;
-  border-radius: var(--radius-m);
-  background: rgba(251,248,243,.84);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,.4);
-  box-shadow: var(--shadow);
+  display: none !important;
 }
-.floating-card strong { display: block; margin-bottom: .35rem; font-size: 1rem; }
+
+.hero-media {
+  position: relative;
+  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: none;
+  isolation: isolate;
+}
+
+.hero-composition {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero-composition--image {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0;
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+  transform: none;
+  animation: none;
+  transition: none;
+  filter: none;
+}
+
+.hero-media::before,
+.hero-media::after {
+  content: none !important;
+}
 
 .pillars-grid,
 .products-grid,
